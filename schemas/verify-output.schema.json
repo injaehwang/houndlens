@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://omnilens.dev/schemas/verify-output.json",
+  "title": "omnilens verify output",
+  "description": "JSON output from `omnilens --format json verify`",
+  "type": "object",
+  "required": ["version", "status", "risk_score", "confidence", "summary", "semantic_changes", "invariant_warnings", "suggested_tests"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "omnilens version"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "fail"],
+      "description": "Overall verification result"
+    },
+    "risk_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Risk score from 0.0 (no risk) to 1.0 (critical risk)"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence in the analysis from 0.0 to 1.0"
+    },
+    "summary": {
+      "type": "object",
+      "required": ["total_changes", "breaking", "needs_review", "safe", "errors", "warnings"],
+      "properties": {
+        "total_changes": { "type": "integer" },
+        "breaking": { "type": "integer", "description": "Number of breaking changes (public API incompatible)" },
+        "needs_review": { "type": "integer", "description": "Number of changes requiring human review" },
+        "safe": { "type": "integer", "description": "Number of safe changes" },
+        "errors": { "type": "integer", "description": "Number of invariant violations at error level" },
+        "warnings": { "type": "integer", "description": "Number of warnings (invariant + review)" }
+      }
+    },
+    "semantic_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "line", "kind", "risk", "description"],
+        "properties": {
+          "file": { "type": "string", "description": "File path" },
+          "line": { "type": "integer", "description": "Line number" },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "FunctionAdded",
+              "FunctionRemoved",
+              "SignatureChange",
+              "TypeChange",
+              "ComplexityChange { old: N, new: N }",
+              "ControlFlowChange",
+              "DataFlowChange",
+              "ApiSurfaceChange",
+              "DependencyAdded",
+              "DependencyRemoved"
+            ],
+            "description": "Type of semantic change"
+          },
+          "risk": {
+            "type": "string",
+            "enum": ["Safe", "NeedsReview", "Breaking", "SecuritySensitive"],
+            "description": "Risk classification"
+          },
+          "description": { "type": "string", "description": "Human-readable description" }
+        }
+      }
+    },
+    "invariant_warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "line", "severity", "description"],
+        "properties": {
+          "file": { "type": "string" },
+          "line": { "type": "integer" },
+          "severity": { "type": "string", "enum": ["error", "warning", "info"] },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "suggested_tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["description", "priority"],
+        "properties": {
+          "description": { "type": "string" },
+          "priority": { "type": "string", "enum": ["Critical", "High", "Medium", "Low"] },
+          "skeleton": { "type": "string", "description": "Test code skeleton in target language" }
+        }
+      }
+    }
+  }
+}

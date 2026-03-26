@@ -1,0 +1,294 @@
+openapi: 3.1.0
+info:
+  title: omnilens API
+  version: 0.1.0
+  description: |
+    AI-native code verification engine. Semantic analysis across Rust, TypeScript, and Python.
+
+    Use this API from any AI agent, LLM tool, or automation system.
+    Start the server: `omnilens serve --api --port 7700`
+  license:
+    name: Apache-2.0 OR MIT
+
+servers:
+  - url: http://localhost:7700
+    description: Local omnilens server
+
+paths:
+  /verify:
+    post:
+      operationId: verify
+      summary: Verify code changes semantically
+      description: |
+        Compares code against a git ref and detects: function additions/removals,
+        signature changes, complexity changes, visibility changes, invariant violations.
+        Returns risk score, semantic changes, and test suggestions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                diff:
+                  type: string
+                  description: "Git ref to compare against (e.g. HEAD~1, main, abc123)"
+                  example: "HEAD~1"
+                files:
+                  type: array
+                  items:
+                    type: string
+                  description: "Specific files to verify (alternative to diff)"
+                cwd:
+                  type: string
+                  description: "Project root directory"
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifyResult"
+
+  /impact:
+    post:
+      operationId: impact
+      summary: Analyze impact of changing a function
+      description: |
+        Shows who calls this function (reverse) and what it calls (forward).
+        Use before modifying code to understand blast radius.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  description: "Path to the file"
+                  example: "src/auth.rs"
+                function:
+                  type: string
+                  description: "Function name to analyze"
+                  example: "verify_token"
+                depth:
+                  type: integer
+                  description: "Max traversal depth"
+                  default: 5
+                cwd:
+                  type: string
+      responses:
+        "200":
+          description: Impact analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImpactResult"
+
+  /query:
+    post:
+      operationId: query
+      summary: Run an OmniQL semantic query
+      description: |
+        Search the codebase using OmniQL.
+        Syntax: FIND <target> WHERE <conditions>
+        Targets: functions, types, modules, bindings, all
+        Example: "FIND functions WHERE complexity > 15 AND visibility = public"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  description: "OmniQL query string"
+                  example: "FIND functions WHERE complexity > 10"
+                cwd:
+                  type: string
+      responses:
+        "200":
+          description: Query results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryResult"
+
+  /invariants:
+    post:
+      operationId: invariants
+      summary: Discover codebase invariants
+      description: |
+        Auto-discovers patterns that are consistently followed in the codebase:
+        naming conventions, error handling rules, call ordering, type usage constraints.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cwd:
+                  type: string
+      responses:
+        "200":
+          description: Discovered invariants
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvariantsResult"
+
+  /index:
+    post:
+      operationId: index
+      summary: Build or update the semantic index
+      description: |
+        Parses all supported files (Rust, TypeScript, Python) and builds
+        a cross-file semantic graph. Run this before other operations.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cwd:
+                  type: string
+      responses:
+        "200":
+          description: Index statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IndexResult"
+
+components:
+  schemas:
+    VerifyResult:
+      type: object
+      required: [version, status, risk_score, confidence, summary, semantic_changes, invariant_warnings, suggested_tests]
+      properties:
+        version:
+          type: string
+        status:
+          type: string
+          enum: [pass, fail]
+        risk_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: "0.0 = no risk, 1.0 = critical"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        summary:
+          type: object
+          properties:
+            total_changes: { type: integer }
+            breaking: { type: integer }
+            needs_review: { type: integer }
+            safe: { type: integer }
+            errors: { type: integer }
+            warnings: { type: integer }
+        semantic_changes:
+          type: array
+          items:
+            type: object
+            properties:
+              file: { type: string }
+              line: { type: integer }
+              kind:
+                type: string
+                enum: [FunctionAdded, FunctionRemoved, SignatureChange, TypeChange, ComplexityChange, ControlFlowChange, ApiSurfaceChange, DataFlowChange, DependencyAdded, DependencyRemoved]
+              risk:
+                type: string
+                enum: [Safe, NeedsReview, Breaking, SecuritySensitive]
+              description: { type: string }
+        invariant_warnings:
+          type: array
+          items:
+            type: object
+            properties:
+              file: { type: string }
+              line: { type: integer }
+              severity: { type: string, enum: [error, warning, info] }
+              description: { type: string }
+        suggested_tests:
+          type: array
+          items:
+            type: object
+            properties:
+              description: { type: string }
+              priority: { type: string, enum: [Critical, High, Medium, Low] }
+              skeleton: { type: string }
+
+    ImpactResult:
+      type: object
+      properties:
+        target:
+          type: string
+          description: "Function being analyzed"
+        callers:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              file: { type: string }
+              line: { type: integer }
+              distance: { type: integer }
+        callees:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              file: { type: string }
+              line: { type: integer }
+              distance: { type: integer }
+        total_affected: { type: integer }
+        risk_score: { type: number }
+
+    QueryResult:
+      type: object
+      properties:
+        query: { type: string }
+        total_scanned: { type: integer }
+        matches:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              file: { type: string }
+              line: { type: integer }
+              kind: { type: string }
+              description: { type: string }
+
+    InvariantsResult:
+      type: object
+      properties:
+        total: { type: integer }
+        high_confidence: { type: integer }
+        invariants:
+          type: array
+          items:
+            type: object
+            properties:
+              kind: { type: string }
+              description: { type: string }
+              confidence: { type: number }
+              evidence_count: { type: integer }
+
+    IndexResult:
+      type: object
+      properties:
+        files_analyzed: { type: integer }
+        nodes: { type: integer }
+        edges: { type: integer }
+        links_resolved: { type: integer }
+        links_unresolved: { type: integer }
+        duration_ms: { type: integer }

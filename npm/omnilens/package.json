@@ -1,0 +1,25 @@
+{
+  "name": "@omnilens/cli",
+  "version": "0.1.0",
+  "description": "AI-native code verification engine — detect semantic changes, invariant violations, and missing tests",
+  "license": "Apache-2.0 OR MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omnilens/omnilens"
+  },
+  "bin": {
+    "omnilens": "bin/omnilens"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "optionalDependencies": {
+    "@omnilens/cli-linux-x64": "0.1.0",
+    "@omnilens/cli-linux-arm64": "0.1.0",
+    "@omnilens/cli-darwin-x64": "0.1.0",
+    "@omnilens/cli-darwin-arm64": "0.1.0",
+    "@omnilens/cli-win32-x64": "0.1.0"
+  },
+  "keywords": ["code-analysis", "verification", "ai", "semantic-diff", "omnilens", "rust"],
+  "files": ["bin", "install.js", "README.md"]
+}

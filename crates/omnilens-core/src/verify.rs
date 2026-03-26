@@ -114,6 +114,7 @@ pub struct TestSuggestion {
     pub skeleton: Option<String>,
 }
 
+#[derive(Debug)]
 pub enum TestPriority {
     Critical,
     High,

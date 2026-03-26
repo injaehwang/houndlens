@@ -1,0 +1,188 @@
+# omnilens
+
+> AI-native code verification engine. Parses Rust/TypeScript/Python into a semantic graph, detects behavioral changes, discovers invariants, and answers queries about your codebase.
+
+## Installation
+
+```bash
+cargo install omnilens
+# or from source:
+git clone https://github.com/omnilens/omnilens && cd omnilens && cargo install --path .
+```
+
+## Usage
+
+### Index a project
+```bash
+cd your-project
+omnilens init
+omnilens index
+# Output: Indexed 42 files | 1404 nodes | 1915 edges | 110ms
+```
+
+### Verify changes (semantic diff)
+```bash
+# Compare against previous commit
+omnilens verify --diff HEAD~1
+
+# Compare against a branch
+omnilens verify --diff main
+
+# JSON output for CI/CD
+omnilens --format json verify --diff HEAD~1
+
+# SARIF for GitHub Code Scanning
+omnilens --format sarif verify --diff HEAD~1
+```
+
+Verify detects:
+- Function added/removed
+- Signature changes (params, return type)
+- Visibility changes (public→private = breaking)
+- Complexity changes (delta ≥ 3)
+- Async/sync changes
+- Impact-weighted risk scoring
+
+### Impact analysis
+```bash
+# What calls this function? What does it call?
+omnilens impact src/auth.rs --fn verify_token --depth 5
+```
+
+### Discover invariants
+```bash
+omnilens invariants
+# Auto-discovers: naming conventions, error handling patterns,
+# call ordering rules, type usage constraints
+```
+
+### Query the codebase (OmniQL)
+```bash
+# Find complex functions
+omnilens query "FIND functions WHERE complexity > 15"
+
+# Find public async functions
+omnilens query "FIND functions WHERE visibility = public AND async = true"
+
+# Find functions that call a specific API
+omnilens query "FIND functions WHERE calls(db.query)"
+
+# Find large structs
+omnilens query "FIND types WHERE fields > 5"
+
+# Find all traits
+omnilens query "FIND types WHERE kind = trait"
+
+# Pattern matching on names
+omnilens query 'FIND functions WHERE name ~ "*test*"'
+
+# Negation
+omnilens query "FIND functions WHERE NOT calls(unwrap)"
+```
+
+## OmniQL Reference
+
+### Targets
+- `functions` / `fn` — function/method definitions
+- `types` / `structs` / `classes` — struct, class, interface, enum, trait, type alias
+- `modules` / `mod` — module/namespace boundaries
+- `bindings` / `vars` — variable/constant declarations
+- `all` — everything
+
+### Comparison fields
+| Field | Applies to | Type | Example |
+|-------|-----------|------|---------|
+| `name` | all | string | `name = "parse"` |
+| `visibility` | all | public/private/protected/internal | `visibility = public` |
+| `complexity` | functions | number | `complexity > 10` |
+| `params` | functions | number | `params > 3` |
+| `fields` | types | number | `fields > 5` |
+| `async` | functions | bool | `async = true` |
+| `unsafe` | functions | bool | `unsafe = true` |
+| `file` | all | string (suffix match) | `file = "parser.rs"` |
+| `kind` | types | struct/class/interface/trait/enum | `kind = trait` |
+
+### Operators
+- `=` `!=` `>` `<` `>=` `<=` — standard comparison
+- `~` — glob pattern match (`*` = any chars)
+
+### Predicates
+| Predicate | Description | Example |
+|-----------|-------------|---------|
+| `calls(x)` | Function calls x | `calls(db.query)` |
+| `called_by(x)` | Function is called by x | `called_by(main)` |
+| `returns(x)` | Return type contains x | `returns(Result)` |
+| `implements(x)` | Type implements trait/interface x | `implements(Serialize)` |
+| `has_field(x)` | Type has field named x | `has_field(id)` |
+| `in_file(x)` | Located in file matching x | `in_file(parser)` |
+
+### Logic
+- `AND` — both conditions must match
+- `NOT` — negate a condition
+
+## JSON Output Schema
+
+When using `--format json`, verify produces:
+
+```json
+{
+  "version": "0.1.0",
+  "status": "pass | fail",
+  "risk_score": 0.0-1.0,
+  "confidence": 0.0-1.0,
+  "summary": {
+    "total_changes": 3,
+    "breaking": 0,
+    "needs_review": 2,
+    "safe": 1,
+    "errors": 0,
+    "warnings": 2
+  },
+  "semantic_changes": [
+    {
+      "file": "src/auth.rs",
+      "line": 42,
+      "kind": "FunctionAdded | FunctionRemoved | SignatureChange | ComplexityChange | ...",
+      "risk": "Safe | NeedsReview | Breaking | SecuritySensitive",
+      "description": "human-readable description"
+    }
+  ],
+  "invariant_warnings": [
+    {
+      "file": "src/auth.rs",
+      "line": 42,
+      "severity": "error | warning | info",
+      "description": "human-readable description"
+    }
+  ],
+  "suggested_tests": [
+    {
+      "description": "Add tests for 'verify_token'",
+      "priority": "Critical | High | Medium | Low",
+      "skeleton": "#[test]\nfn test_verify_token() { todo!() }"
+    }
+  ]
+}
+```
+
+## GitHub Action
+
+```yaml
+- uses: omnilens/omnilens@v1
+  with:
+    comment: "true"    # Post PR comment with results
+    fail-on: "error"   # Fail on: error, warning, never
+```
+
+## Supported languages
+
+| Language | File extensions | Parsing | Types | Calls | Imports |
+|----------|----------------|---------|-------|-------|---------|
+| Rust | .rs | ✅ | ✅ | ✅ | ✅ |
+| TypeScript | .ts .tsx .js .jsx .mts .mjs | ✅ | ✅ | ✅ | ✅ |
+| Python | .py .pyi | ✅ | ✅ | ✅ | ✅ |
+
+## Exit codes
+
+- `0` — verification passed (no errors)
+- `1` — verification failed (errors found, or breaking changes detected)

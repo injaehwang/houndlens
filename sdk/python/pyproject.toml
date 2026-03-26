@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "omnilens"
+version = "0.1.0"
+description = "AI-native code verification engine — Python SDK"
+readme = "README.md"
+license = "Apache-2.0 OR MIT"
+requires-python = ">=3.10"
+keywords = ["code-analysis", "verification", "ai", "semantic-diff", "omnilens"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Quality Assurance",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+]
+
+[project.optional-dependencies]
+langchain = ["langchain-core>=0.2"]

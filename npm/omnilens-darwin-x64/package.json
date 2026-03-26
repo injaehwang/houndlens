@@ -1,0 +1,13 @@
+{
+  "name": "@omnilens/cli-darwin-x64",
+  "version": "0.1.0",
+  "description": "omnilens binary for darwin-x64",
+  "license": "Apache-2.0 OR MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omnilens/omnilens"
+  },
+  "os": ["darwin"],
+  "cpu": ["x64"],
+  "files": ["omnilens", "omnilens.exe"]
+}

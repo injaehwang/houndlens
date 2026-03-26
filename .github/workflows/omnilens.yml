@@ -1,0 +1,31 @@
+name: omnilens verify
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install omnilens
+        run: cargo install --path .
+
+      - name: Run omnilens verify
+        uses: ./
+        with:
+          comment: "true"
+          fail-on: "error"

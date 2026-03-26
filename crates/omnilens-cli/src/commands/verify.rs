@@ -2,12 +2,16 @@ use anyhow::Result;
 use colored::Colorize;
 use omnilens_core::verify::DiffSpec;
 
-pub fn run(diff: Option<String>, files: Vec<String>) -> Result<()> {
+use crate::OutputFormat;
+
+pub fn run(diff: Option<String>, files: Vec<String>, format: &OutputFormat) -> Result<()> {
     let mut engine = super::create_engine()?;
 
     // Index first.
     let idx = engine.index()?;
-    if idx.files_analyzed > 0 {
+    if !matches!(format, OutputFormat::Text) {
+        // Suppress index output for machine-readable formats.
+    } else if idx.files_analyzed > 0 {
         eprintln!(
             "{} {} files indexed, {} links resolved",
             "Index".dimmed(),
@@ -27,12 +31,38 @@ pub fn run(diff: Option<String>, files: Vec<String>) -> Result<()> {
         DiffSpec::WorkingDir
     };
 
-    println!("{}", "Verifying changes...".cyan());
+    if matches!(format, OutputFormat::Text) {
+        println!("{}", "Verifying changes...".cyan());
+    }
+
     let result = engine.verify(&diff_spec)?;
 
-    // Show semantic changes.
+    // Output based on format.
+    match format {
+        OutputFormat::Json => {
+            println!("{}", omnilens_core::output::to_json(&result));
+            if result.has_errors() {
+                std::process::exit(1);
+            }
+            return Ok(());
+        }
+        OutputFormat::Sarif => {
+            println!("{}", omnilens_core::output::to_sarif(&result));
+            if result.has_errors() {
+                std::process::exit(1);
+            }
+            return Ok(());
+        }
+        OutputFormat::Text => {}
+    }
+
+    // Text output.
     if !result.semantic_changes.is_empty() {
-        println!("\n{} ({} total)", "Semantic Changes".bold().yellow(), result.semantic_changes.len());
+        println!(
+            "\n{} ({} total)",
+            "Semantic Changes".bold().yellow(),
+            result.semantic_changes.len()
+        );
         for change in &result.semantic_changes {
             let risk_badge = match change.risk {
                 omnilens_core::verify::ChangeRisk::Safe => "SAFE".green(),
@@ -44,14 +74,18 @@ pub fn run(diff: Option<String>, files: Vec<String>) -> Result<()> {
             println!(
                 "  [{}] {}:{} — {}",
                 risk_badge,
-                change.location.file.file_name().unwrap_or_default().to_string_lossy(),
+                change
+                    .location
+                    .file
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy(),
                 change.location.start_line,
                 change.description,
             );
         }
     }
 
-    // Show invariant violations.
     if !result.invariant_violations.is_empty() {
         println!(
             "\n{} ({} total)",
@@ -67,14 +101,17 @@ pub fn run(diff: Option<String>, files: Vec<String>) -> Result<()> {
             println!(
                 "  [{}] {}:{} — {}",
                 severity_badge,
-                v.location.file.file_name().unwrap_or_default().to_string_lossy(),
+                v.location
+                    .file
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy(),
                 v.location.start_line,
                 v.description,
             );
         }
     }
 
-    // Show test suggestions.
     if !result.suggested_tests.is_empty() {
         println!(
             "\n{} ({} total)",
@@ -85,11 +122,14 @@ pub fn run(diff: Option<String>, files: Vec<String>) -> Result<()> {
             println!("  {} {}", "→".cyan(), t.description);
         }
         if result.suggested_tests.len() > 5 {
-            println!("  {} ... and {} more", "→".dimmed(), result.suggested_tests.len() - 5);
+            println!(
+                "  {} ... and {} more",
+                "→".dimmed(),
+                result.suggested_tests.len() - 5
+            );
         }
     }
 
-    // Summary.
     println!();
     if result.has_errors() {
         println!(

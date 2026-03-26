@@ -1,0 +1,4 @@
+#!/bin/sh
+# Placeholder — replaced by install.js with the actual binary.
+echo "omnilens binary not installed. Run: npm install -g @omnilens/cli"
+exit 1

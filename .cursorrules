@@ -1,0 +1,26 @@
+## omnilens project context
+
+This is omnilens — an AI-native code verification engine written in Rust.
+
+### Quick reference
+- **Build**: `cargo build`
+- **Test**: `cargo test` (26 tests)
+- **Self-test**: `cargo run -- index` then `cargo run -- verify --diff HEAD~1`
+- **Query**: `cargo run -- query "FIND functions WHERE complexity > 10"`
+
+### When modifying code
+1. Run `cargo run -- verify --files <changed-file>` to check your changes
+2. Every new public function needs the `LanguageFrontend` pattern if it's a parser
+3. Frontend Node IDs use separate `AtomicU64` ranges: Rust 1+, TS 100_000+, Python 200_000+
+4. Placeholder nodes (complexity=None) are resolved by the linker in `omnilens-graph/src/linker.rs`
+5. All paths should use forward slashes internally for cross-platform matching
+
+### Workspace structure
+14 crates in `crates/`. Core flow: Frontend → USIR → Graph → Linker → Analysis → Output.
+Key traits: `LanguageFrontend` (frontend.rs), key types: `UsirNode`, `UsirEdge` (omnilens-ir).
+
+### Adding a new language
+1. Create `crates/omnilens-frontend-<lang>/` with `Cargo.toml` + `src/lib.rs` + `src/parser.rs`
+2. Implement `LanguageFrontend` trait
+3. Register in `crates/omnilens-cli/src/commands/mod.rs` → `create_engine()`
+4. Add tree-sitter grammar dependency to workspace `Cargo.toml`

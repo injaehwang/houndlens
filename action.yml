@@ -1,0 +1,176 @@
+name: "omnilens verify"
+description: "AI-native code verification — detect semantic changes, invariant violations, and missing tests"
+author: "omnilens"
+
+branding:
+  icon: "shield"
+  color: "blue"
+
+inputs:
+  diff:
+    description: "Git diff spec (default: compare PR base to head)"
+    required: false
+    default: ""
+  format:
+    description: "Output format: text, json, sarif"
+    required: false
+    default: "text"
+  fail-on:
+    description: "Fail the action on: error, warning, never"
+    required: false
+    default: "error"
+  comment:
+    description: "Post results as PR comment (true/false)"
+    required: false
+    default: "true"
+
+outputs:
+  status:
+    description: "pass or fail"
+  risk-score:
+    description: "Risk score 0-100"
+  changes:
+    description: "Number of semantic changes detected"
+  json:
+    description: "Full JSON output"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install omnilens
+      shell: bash
+      run: |
+        if ! command -v omnilens &> /dev/null; then
+          echo "Installing omnilens..."
+          cargo install --path . --locked 2>/dev/null || cargo install --path .
+        fi
+
+    - name: Determine diff range
+      id: diff-range
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.diff }}" ]; then
+          echo "diff=${{ inputs.diff }}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "diff=${{ github.event.pull_request.base.sha }}" >> $GITHUB_OUTPUT
+        else
+          echo "diff=HEAD~1" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Run omnilens verify
+      id: verify
+      shell: bash
+      run: |
+        set +e
+        JSON_OUTPUT=$(omnilens --format json verify --diff "${{ steps.diff-range.outputs.diff }}" 2>/dev/null)
+        EXIT_CODE=$?
+        echo "json<<OMNILENS_EOF" >> $GITHUB_OUTPUT
+        echo "$JSON_OUTPUT" >> $GITHUB_OUTPUT
+        echo "OMNILENS_EOF" >> $GITHUB_OUTPUT
+
+        STATUS=$(echo "$JSON_OUTPUT" | jq -r '.status // "unknown"')
+        RISK=$(echo "$JSON_OUTPUT" | jq -r '.risk_score // 0' | awk '{printf "%.0f", $1 * 100}')
+        CHANGES=$(echo "$JSON_OUTPUT" | jq -r '.summary.total_changes // 0')
+
+        echo "status=$STATUS" >> $GITHUB_OUTPUT
+        echo "risk-score=$RISK" >> $GITHUB_OUTPUT
+        echo "changes=$CHANGES" >> $GITHUB_OUTPUT
+
+        # Save for PR comment.
+        echo "$JSON_OUTPUT" > /tmp/omnilens-result.json
+
+        # Determine exit code based on fail-on setting.
+        if [ "${{ inputs.fail-on }}" = "never" ]; then
+          exit 0
+        elif [ "${{ inputs.fail-on }}" = "warning" ]; then
+          WARNINGS=$(echo "$JSON_OUTPUT" | jq -r '.summary.warnings // 0')
+          if [ "$WARNINGS" -gt 0 ] || [ "$EXIT_CODE" -ne 0 ]; then
+            exit 1
+          fi
+        else
+          exit $EXIT_CODE
+        fi
+
+    - name: Generate SARIF (for Code Scanning)
+      if: always()
+      shell: bash
+      run: |
+        omnilens --format sarif verify --diff "${{ steps.diff-range.outputs.diff }}" 2>/dev/null > omnilens-results.sarif || true
+
+    - name: Upload SARIF
+      if: always()
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: omnilens-results.sarif
+      continue-on-error: true
+
+    - name: Comment on PR
+      if: github.event_name == 'pull_request' && inputs.comment == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          let result;
+          try {
+            result = JSON.parse(fs.readFileSync('/tmp/omnilens-result.json', 'utf8'));
+          } catch(e) {
+            return;
+          }
+
+          const status = result.status === 'pass' ? '✅' : '❌';
+          const risk = Math.round(result.risk_score * 100);
+
+          let body = `## ${status} omnilens verification\n\n`;
+          body += `| Metric | Value |\n|--------|-------|\n`;
+          body += `| Status | **${result.status.toUpperCase()}** |\n`;
+          body += `| Risk Score | **${risk}%** |\n`;
+          body += `| Semantic Changes | ${result.summary.total_changes} |\n`;
+          body += `| Breaking | ${result.summary.breaking} |\n`;
+          body += `| Needs Review | ${result.summary.needs_review} |\n`;
+          body += `| Warnings | ${result.summary.warnings} |\n\n`;
+
+          if (result.semantic_changes.length > 0) {
+            body += `### Semantic Changes\n\n`;
+            for (const c of result.semantic_changes.slice(0, 10)) {
+              const icon = c.risk === 'Breaking' ? '🔴' : c.risk === 'NeedsReview' ? '🟡' : '🟢';
+              body += `- ${icon} **${c.kind}** \`${c.file.split('/').pop()}:${c.line}\` — ${c.description}\n`;
+            }
+            if (result.semantic_changes.length > 10) {
+              body += `\n... and ${result.semantic_changes.length - 10} more\n`;
+            }
+            body += '\n';
+          }
+
+          if (result.suggested_tests.length > 0) {
+            body += `### Suggested Tests\n\n`;
+            for (const t of result.suggested_tests.slice(0, 5)) {
+              body += `- ${t.description}\n`;
+            }
+            body += '\n';
+          }
+
+          body += `\n---\n🔍 *Generated by [omnilens](https://github.com/omnilens/omnilens)*`;
+
+          // Find existing omnilens comment to update.
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+
+          const existing = comments.find(c => c.body.includes('omnilens verification'));
+          if (existing) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existing.id,
+              body: body,
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body,
+            });
+          }

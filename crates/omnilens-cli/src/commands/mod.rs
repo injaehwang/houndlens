@@ -8,6 +8,8 @@ pub mod trace;
 pub mod graph;
 pub mod serve;
 pub mod invariants;
+pub mod hook;
+pub mod ci;
 
 use omnilens_core::Engine;
 use omnilens_frontend_python::PythonFrontend;

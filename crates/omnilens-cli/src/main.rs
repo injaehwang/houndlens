@@ -87,10 +87,36 @@ enum Command {
 
     /// Show discovered invariants and contracts.
     Invariants,
+
+    /// Install/uninstall git hooks for automatic verification.
+    Hook {
+        #[command(subcommand)]
+        action: HookAction,
+    },
+
+    /// Run verification in CI (auto-detects GitHub/GitLab/local).
+    Ci {
+        /// Override platform detection: github, gitlab, local.
+        #[arg(long)]
+        platform: Option<String>,
+        /// Fail threshold: error, warning, never.
+        #[arg(long, default_value = "error")]
+        fail_on: String,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum HookAction {
+    /// Install pre-commit and pre-push hooks.
+    Install,
+    /// Uninstall omnilens git hooks.
+    Uninstall,
+    /// Show current hook status.
+    Status,
 }
 
 #[derive(Clone, clap::ValueEnum)]
-enum OutputFormat {
+pub enum OutputFormat {
     Text,
     Json,
     Sarif,
@@ -116,12 +142,16 @@ fn main() -> Result<()> {
         Command::Impact { target, r#fn, depth } => {
             commands::impact::run(&target, r#fn.as_deref(), depth)
         }
-        Command::Verify { diff, files } => commands::verify::run(diff, files),
+        Command::Verify { diff, files } => commands::verify::run(diff, files, &cli.format),
         Command::Query { query } => commands::query::run(&query),
         Command::Testgen { target, strategy } => commands::testgen::run(&target, &strategy),
         Command::Trace { attach } => commands::trace::run(attach),
         Command::Graph { output } => commands::graph::run(&output),
         Command::Serve => commands::serve::run(),
         Command::Invariants => commands::invariants::run(),
+        Command::Hook { action } => commands::hook::run(action),
+        Command::Ci { platform, fail_on } => {
+            commands::ci::run(platform.as_deref(), &fail_on, &cli.format)
+        }
     }
 }

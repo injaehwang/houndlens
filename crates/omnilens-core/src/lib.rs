@@ -6,6 +6,7 @@
 
 pub mod frontend;
 pub mod invariants;
+pub mod output;
 pub mod semantic_diff;
 pub mod verify;
 pub mod config;

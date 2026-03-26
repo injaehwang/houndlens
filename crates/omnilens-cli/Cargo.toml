@@ -13,6 +13,7 @@ path = "src/main.rs"
 omnilens-core = { workspace = true }
 omnilens-ir = { workspace = true }
 omnilens-graph = { workspace = true }
+omnilens-query = { workspace = true }
 omnilens-frontend-rust = { workspace = true }
 omnilens-frontend-typescript = { workspace = true }
 omnilens-frontend-python = { workspace = true }
