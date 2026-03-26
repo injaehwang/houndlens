@@ -11,8 +11,23 @@ use omnilens_ir::node::UsirNode;
 use crate::OutputFormat;
 
 pub fn run(files: Vec<String>, format: &OutputFormat) -> Result<()> {
+    let cwd = std::env::current_dir()?;
+
+    // Auto-init if first time.
+    let omnilens_dir = cwd.join(".omnilens");
+    if !omnilens_dir.exists() {
+        if !matches!(format, OutputFormat::Json | OutputFormat::Sarif) {
+            println!("  {} First run — initializing omnilens...", "→".cyan());
+        }
+        std::fs::create_dir_all(&omnilens_dir)?;
+    }
+
     let mut engine = super::create_engine()?;
     let idx = engine.index()?;
+
+    // Generate/update manifest.
+    let manifest = omnilens_core::manifest::generate(&cwd, &engine.graph);
+    omnilens_core::manifest::write(&cwd, &manifest)?;
 
     // Auto-detect what to check.
     let diff_spec = if !files.is_empty() {

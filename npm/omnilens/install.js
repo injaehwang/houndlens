@@ -51,6 +51,11 @@ try {
   }
 
   console.log(`omnilens: installed ${platform} binary`);
+  console.log(``);
+  console.log(`  Get started:`);
+  console.log(`    cd your-project`);
+  console.log(`    omnilens`);
+  console.log(``);
 } catch (err) {
   console.error(`omnilens: failed to install binary for ${platform}`);
   console.error(err.message);
