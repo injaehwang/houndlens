@@ -144,18 +144,125 @@ pub fn run(files: Vec<String>) -> Result<()> {
     }
 
     println!();
+    if tests_generated == 0 {
+        return Ok(());
+    }
+
     println!(
         "  {} {} tests generated in {} files",
         "Done.".green().bold(),
         tests_generated,
         files_written,
     );
-    println!(
-        "  Run your test runner to verify: {}, {}, or {}",
-        "vitest".cyan(),
-        "pytest".cyan(),
-        "cargo test".cyan(),
-    );
+
+    // Auto-detect and run test runners.
+    println!();
+    println!("  {}", "Running tests...".cyan());
+    println!();
+
+    let cwd = std::env::current_dir()?;
+    let mut any_ran = false;
+    let mut any_failed = false;
+
+    // TypeScript/JavaScript: vitest > jest > npx vitest
+    if file_functions.keys().any(|f| {
+        let ext = Path::new(f).extension().and_then(|e| e.to_str()).unwrap_or("");
+        matches!(ext, "ts" | "tsx" | "js" | "jsx" | "mts" | "mjs")
+    }) {
+        let runner = detect_ts_runner(&cwd);
+        if let Some((cmd, args)) = runner {
+            println!("  {} {}", "▶".cyan(), format!("{} {}", cmd, args.join(" ")).dimmed());
+            let status = std::process::Command::new(&cmd)
+                .args(&args)
+                .current_dir(&cwd)
+                .status();
+            match status {
+                Ok(s) => {
+                    any_ran = true;
+                    if !s.success() {
+                        any_failed = true;
+                        println!("  {} TypeScript tests failed", "✗".red());
+                    } else {
+                        println!("  {} TypeScript tests passed", "✓".green());
+                    }
+                }
+                Err(e) => {
+                    println!("  {} Could not run {}: {}", "!".yellow(), cmd, e);
+                }
+            }
+            println!();
+        }
+    }
+
+    // Python: pytest
+    if file_functions.keys().any(|f| {
+        let ext = Path::new(f).extension().and_then(|e| e.to_str()).unwrap_or("");
+        matches!(ext, "py" | "pyi")
+    }) {
+        let runner = detect_py_runner(&cwd);
+        if let Some((cmd, args)) = runner {
+            println!("  {} {}", "▶".cyan(), format!("{} {}", cmd, args.join(" ")).dimmed());
+            let status = std::process::Command::new(&cmd)
+                .args(&args)
+                .current_dir(&cwd)
+                .env("PYTHONPATH", &cwd)
+                .status();
+            match status {
+                Ok(s) => {
+                    any_ran = true;
+                    if !s.success() {
+                        any_failed = true;
+                        println!("  {} Python tests failed", "✗".red());
+                    } else {
+                        println!("  {} Python tests passed", "✓".green());
+                    }
+                }
+                Err(e) => {
+                    println!("  {} Could not run {}: {}", "!".yellow(), cmd, e);
+                }
+            }
+            println!();
+        }
+    }
+
+    // Rust: cargo test
+    if file_functions.keys().any(|f| f.ends_with(".rs")) {
+        println!("  {} cargo test", "▶".cyan());
+        let status = std::process::Command::new("cargo")
+            .args(["test"])
+            .current_dir(&cwd)
+            .status();
+        match status {
+            Ok(s) => {
+                any_ran = true;
+                if !s.success() {
+                    any_failed = true;
+                    println!("  {} Rust tests failed", "✗".red());
+                } else {
+                    println!("  {} Rust tests passed", "✓".green());
+                }
+            }
+            Err(e) => {
+                println!("  {} Could not run cargo test: {}", "!".yellow(), e);
+            }
+        }
+        println!();
+    }
+
+    if !any_ran {
+        println!(
+            "  {} No test runner found. Install {}, {}, or {}",
+            "!".yellow(),
+            "vitest".cyan(),
+            "pytest".cyan(),
+            "cargo".cyan(),
+        );
+    } else if any_failed {
+        println!("  {} Some tests failed — review generated tests and fill in TODO stubs", "!".yellow());
+        std::process::exit(1);
+    } else {
+        println!("  {} All tests passed", "✓".green().bold());
+    }
     println!();
 
     Ok(())
@@ -266,7 +373,7 @@ fn generate_ts_param_stubs(params: &[ParamInfo]) -> String {
             } else if p.type_str.contains("Bool") || p.type_str.contains("boolean") {
                 "false".to_string()
             } else {
-                format!("undefined /* {} */", p.name)
+                "undefined".to_string()
             }
         })
         .collect::<Vec<_>>()
@@ -352,7 +459,70 @@ fn generate_py_tests(source_file: &str, functions: &[FnInfo]) -> (String, String
 
     // Class method tests.
     for (cls, methods) in &classes {
+        // Find __init__ params for constructor stub.
+        let init_params: Vec<&ParamInfo> = methods
+            .iter()
+            .find(|f| f.name == "__init__")
+            .map(|f| f.params.iter().filter(|p| p.name != "self" && p.name != "cls").collect())
+            .unwrap_or_default();
+
+        let ctor_args = if init_params.is_empty() {
+            String::new()
+        } else {
+            init_params
+                .iter()
+                .map(|p| {
+                    // Create a MagicMock for object-like params, simple values for primitives.
+                    if p.type_str.contains("str") || p.type_str.contains("String") {
+                        format!("\"test_{}\"", p.name)
+                    } else if p.type_str.contains("int") || p.type_str.contains("Int") {
+                        "0".to_string()
+                    } else if p.type_str.contains("bool") || p.type_str.contains("Bool") {
+                        "False".to_string()
+                    } else {
+                        format!("mock_{}", p.name)
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+
+        // Check if we need MagicMock.
+        let needs_mock = ctor_args.contains("mock_");
+
         content.push_str(&format!("class Test{}:\n", cls));
+
+        // Setup method if mocks needed.
+        if needs_mock {
+            content.push_str("    def setup_method(self):\n");
+            for p in &init_params {
+                if !p.type_str.contains("str") && !p.type_str.contains("int") && !p.type_str.contains("bool")
+                    && !p.type_str.contains("String") && !p.type_str.contains("Int") && !p.type_str.contains("Bool") {
+                    content.push_str(&format!("        self.mock_{} = MagicMock()\n", p.name));
+                    // Add async return values for common db methods.
+                    content.push_str(&format!("        self.mock_{name}.fetch_one = AsyncMock(return_value=None)\n", name=p.name));
+                    content.push_str(&format!("        self.mock_{name}.fetch_all = AsyncMock(return_value=[])\n", name=p.name));
+                    content.push_str(&format!("        self.mock_{name}.execute = AsyncMock(return_value=MagicMock(rowcount=0))\n", name=p.name));
+                }
+            }
+            let self_ctor_args = init_params
+                .iter()
+                .map(|p| {
+                    if p.type_str.contains("str") || p.type_str.contains("String") {
+                        format!("\"test_{}\"", p.name)
+                    } else if p.type_str.contains("int") || p.type_str.contains("Int") {
+                        "0".to_string()
+                    } else if p.type_str.contains("bool") || p.type_str.contains("Bool") {
+                        "False".to_string()
+                    } else {
+                        format!("self.mock_{}", p.name)
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            content.push_str(&format!("        self.instance = {}({})\n\n", cls, self_ctor_args));
+        }
+
         for f in methods {
             if f.name == "__init__" { continue; }
             let async_kw = if f.is_async { "async " } else { "" };
@@ -360,18 +530,24 @@ fn generate_py_tests(source_file: &str, functions: &[FnInfo]) -> (String, String
             let decorator = if f.is_async { "    @pytest.mark.asyncio\n" } else { "" };
             let param_stubs = generate_py_param_stubs(&f.params);
 
-            content.push_str(&format!(
-                "{}    {}def test_{}(self):\n        instance = {}(TODO)  # provide constructor args\n        result = {}instance.{}({})\n        assert result is not None\n\n",
-                decorator,
-                async_kw,
-                f.name,
-                cls,
-                await_kw,
-                f.name,
-                param_stubs,
-            ));
+            if needs_mock {
+                content.push_str(&format!(
+                    "{}    {}def test_{}(self):\n        result = {}self.instance.{}({})\n        assert result is not None\n\n",
+                    decorator, async_kw, f.name, await_kw, f.name, param_stubs,
+                ));
+            } else {
+                content.push_str(&format!(
+                    "{}    {}def test_{}(self):\n        instance = {}({})\n        result = {}instance.{}({})\n        assert result is not None\n\n",
+                    decorator, async_kw, f.name, cls, ctor_args, await_kw, f.name, param_stubs,
+                ));
+            }
         }
         content.push('\n');
+    }
+
+    // Add mock imports at top if needed.
+    if content.contains("MagicMock") {
+        content = format!("from unittest.mock import MagicMock, AsyncMock\n{}", content);
     }
 
     (test_path, content)
@@ -391,7 +567,7 @@ fn generate_py_param_stubs(params: &[ParamInfo]) -> String {
             } else if p.type_str.contains("Bool") || p.type_str.contains("bool") {
                 "False".to_string()
             } else {
-                format!("None  # {}", p.name)
+                "None".to_string()
             }
         })
         .collect::<Vec<_>>()
@@ -453,4 +629,59 @@ fn generate_rs_param_stubs(params: &[ParamInfo]) -> String {
         })
         .collect::<Vec<_>>()
         .join(", ")
+}
+
+// ─── Test runner detection ──────────────────────────────────────
+
+fn detect_ts_runner(cwd: &Path) -> Option<(String, Vec<String>)> {
+    let pkg_json = cwd.join("package.json");
+    if pkg_json.exists() {
+        if let Ok(content) = std::fs::read_to_string(&pkg_json) {
+            if content.contains("vitest") {
+                return Some(("npx".into(), vec!["vitest".into(), "run".into()]));
+            }
+            if content.contains("jest") {
+                return Some(("npx".into(), vec!["jest".into(), "--passWithNoTests".into()]));
+            }
+        }
+    }
+
+    if cwd.join("node_modules/.bin/vitest").exists()
+        || cwd.join("node_modules/.bin/vitest.cmd").exists()
+    {
+        return Some(("npx".into(), vec!["vitest".into(), "run".into()]));
+    }
+    if cwd.join("node_modules/.bin/jest").exists()
+        || cwd.join("node_modules/.bin/jest.cmd").exists()
+    {
+        return Some(("npx".into(), vec!["jest".into(), "--passWithNoTests".into()]));
+    }
+
+    // Fallback: try npx vitest.
+    Some(("npx".into(), vec!["vitest".into(), "run".into()]))
+}
+
+fn detect_py_runner(cwd: &Path) -> Option<(String, Vec<String>)> {
+    let pytest_exists = std::process::Command::new("pytest")
+        .arg("--version")
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false);
+
+    if pytest_exists {
+        return Some(("pytest".into(), vec!["-v".into(), "--tb=short".into(), "--rootdir=.".into()]));
+    }
+
+    let python_cmd = if cfg!(windows) { "python" } else { "python3" };
+    let python_pytest = std::process::Command::new(python_cmd)
+        .args(["-m", "pytest", "--version"])
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false);
+
+    if python_pytest {
+        return Some((python_cmd.into(), vec!["-m".into(), "pytest".into(), "-v".into(), "--tb=short".into(), "--rootdir=.".into()]));
+    }
+
+    None
 }
