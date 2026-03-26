@@ -7,6 +7,7 @@
 pub mod ai;
 pub mod frontend;
 pub mod invariants;
+pub mod manifest;
 pub mod output;
 pub mod semantic_diff;
 pub mod verify;

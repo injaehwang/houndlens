@@ -30,5 +30,10 @@ pub fn run() -> Result<()> {
         engine.graph.edge_count()
     );
 
+    // Update manifest.
+    let cwd = std::env::current_dir()?;
+    let manifest = omnilens_core::manifest::generate(&cwd, &engine.graph);
+    omnilens_core::manifest::write(&cwd, &manifest)?;
+
     Ok(())
 }
