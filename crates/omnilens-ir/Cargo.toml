@@ -9,3 +9,4 @@ description = "Universal Semantic IR (USIR) — language-independent code repres
 serde = { workspace = true }
 bincode = { workspace = true }
 sha2 = { workspace = true }
+hex = { workspace = true }

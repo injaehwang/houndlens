@@ -70,4 +70,19 @@ impl ContentHash {
         hash.copy_from_slice(&result);
         Self(hash)
     }
+
+    /// Create a hash from a string (convenience wrapper).
+    pub fn from_str_content(s: &str) -> Self {
+        Self::from_bytes(s.as_bytes())
+    }
+
+    /// Check if this is a zero hash (empty content).
+    pub fn is_zero(&self) -> bool {
+        self.0.iter().all(|&b| b == 0)
+    }
+
+    /// Return hex representation.
+    pub fn to_hex(&self) -> String {
+        hex::encode(self.0)
+    }
 }
