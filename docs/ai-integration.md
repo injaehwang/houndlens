@@ -92,7 +92,7 @@ For agents that operate through pull requests.
 
 ```yaml
 # .github/workflows/omnilens.yml
-- uses: omnilens/omnilens@v1
+- uses: injaehwang/omnilens@v1
   with:
     comment: "true"    # Post results as PR comment
     fail-on: "error"   # Gate the PR

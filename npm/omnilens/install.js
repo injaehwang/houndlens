@@ -7,11 +7,11 @@ const { existsSync, mkdirSync, copyFileSync, chmodSync } = require("fs");
 const { join, dirname } = require("path");
 
 const PLATFORMS = {
-  "linux-x64": "@omnilens/cli-linux-x64",
-  "linux-arm64": "@omnilens/cli-linux-arm64",
-  "darwin-x64": "@omnilens/cli-darwin-x64",
-  "darwin-arm64": "@omnilens/cli-darwin-arm64",
-  "win32-x64": "@omnilens/cli-win32-x64",
+  "linux-x64": "omnilens-linux-x64",
+  "linux-arm64": "omnilens-linux-arm64",
+  "darwin-x64": "omnilens-darwin-x64",
+  "darwin-arm64": "omnilens-darwin-arm64",
+  "win32-x64": "omnilens-win32-x64",
 };
 
 const platform = `${process.platform}-${process.arch}`;
@@ -38,7 +38,7 @@ try {
   if (!existsSync(src)) {
     console.error(`omnilens: binary not found at ${src}`);
     console.error(
-      "Try reinstalling: npm install -g @omnilens/cli"
+      "Try reinstalling: npm install -g omnilens"
     );
     process.exit(1);
   }

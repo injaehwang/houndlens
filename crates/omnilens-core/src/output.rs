@@ -308,7 +308,7 @@ pub fn to_sarif(result: &VerifyResult) -> String {
                 driver: SarifDriver {
                     name: "omnilens".into(),
                     version: "0.1.0".into(),
-                    information_uri: "https://github.com/omnilens/omnilens".into(),
+                    information_uri: "https://github.com/injaehwang/omnilens".into(),
                     rules,
                 },
             },

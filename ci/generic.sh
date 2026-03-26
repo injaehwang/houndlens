@@ -3,7 +3,7 @@
 # Works with: Jenkins, Bitbucket Pipelines, Azure DevOps, CircleCI, Travis, etc.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/omnilens/omnilens/main/ci/generic.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/injaehwang/omnilens/main/ci/generic.sh | bash
 #
 # Environment variables:
 #   OMNILENS_DIFF_BASE  - Git ref to compare against (default: auto-detect)
@@ -23,7 +23,7 @@ if ! command -v omnilens &> /dev/null; then
     echo "Installing omnilens..."
     cargo install omnilens 2>/dev/null || {
         echo "cargo install failed, trying from source..."
-        git clone --depth 1 https://github.com/omnilens/omnilens /tmp/omnilens
+        git clone --depth 1 https://github.com/injaehwang/omnilens /tmp/omnilens
         cargo install --path /tmp/omnilens
     }
 fi

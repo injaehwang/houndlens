@@ -6,7 +6,7 @@ omnilens works with **any CI platform** and **any git hosting**. No vendor lock-
 
 ```bash
 # One-line setup for any CI
-curl -fsSL https://raw.githubusercontent.com/omnilens/omnilens/main/ci/generic.sh | bash
+curl -fsSL https://raw.githubusercontent.com/injaehwang/omnilens/main/ci/generic.sh | bash
 ```
 
 Or in your CI config:
@@ -70,7 +70,7 @@ jobs:
 
 Or use the action directly:
 ```yaml
-      - uses: omnilens/omnilens@v1
+      - uses: injaehwang/omnilens@v1
         with:
           comment: "true"
           fail-on: "error"
@@ -81,7 +81,7 @@ Or use the action directly:
 ```yaml
 # .gitlab-ci.yml
 include:
-  - remote: 'https://raw.githubusercontent.com/omnilens/omnilens/main/ci/gitlab-ci.yml'
+  - remote: 'https://raw.githubusercontent.com/injaehwang/omnilens/main/ci/gitlab-ci.yml'
 ```
 
 Or manually:

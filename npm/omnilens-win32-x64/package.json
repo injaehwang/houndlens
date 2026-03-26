@@ -1,11 +1,11 @@
 {
-  "name": "@omnilens/cli-win32-x64",
+  "name": "omnilens-win32-x64",
   "version": "0.1.0",
   "description": "omnilens binary for win32-x64",
   "license": "Apache-2.0 OR MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/omnilens/omnilens"
+    "url": "https://github.com/injaehwang/omnilens"
   },
   "os": ["win32"],
   "cpu": ["x64"],

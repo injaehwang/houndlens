@@ -7,7 +7,7 @@
 ```bash
 cargo install omnilens
 # or from source:
-git clone https://github.com/omnilens/omnilens && cd omnilens && cargo install --path .
+git clone https://github.com/injaehwang/omnilens && cd omnilens && cargo install --path .
 ```
 
 ## Usage
@@ -168,7 +168,7 @@ When using `--format json`, verify produces:
 ## GitHub Action
 
 ```yaml
-- uses: omnilens/omnilens@v1
+- uses: injaehwang/omnilens@v1
   with:
     comment: "true"    # Post PR comment with results
     fail-on: "error"   # Fail on: error, warning, never

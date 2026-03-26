@@ -1,11 +1,11 @@
 #!/bin/sh
 # omnilens installer
 # Usage: curl -fsSL https://omnilens.dev/install.sh | sh
-#    or: curl -fsSL https://raw.githubusercontent.com/omnilens/omnilens/main/install.sh | sh
+#    or: curl -fsSL https://raw.githubusercontent.com/injaehwang/omnilens/main/install.sh | sh
 
 set -eu
 
-REPO="omnilens/omnilens"
+REPO="injaehwang/omnilens"
 INSTALL_DIR="${OMNILENS_INSTALL_DIR:-$HOME/.omnilens/bin}"
 
 # Detect platform.

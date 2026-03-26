@@ -1,11 +1,11 @@
 {
-  "name": "@omnilens/cli-linux-x64",
+  "name": "omnilens-linux-x64",
   "version": "0.1.0",
   "description": "omnilens binary for linux-x64",
   "license": "Apache-2.0 OR MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/omnilens/omnilens"
+    "url": "https://github.com/injaehwang/omnilens"
   },
   "os": ["linux"],
   "cpu": ["x64"],
