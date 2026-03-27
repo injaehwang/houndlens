@@ -76,19 +76,27 @@ pub fn run() -> Result<()> {
 
 const AI_CONTEXT: &str = r#"# omnilens
 
-This project uses omnilens for code analysis. A complete project snapshot is at `.omnilens/snapshot.json`.
+This project uses omnilens for code analysis. Read `.omnilens/snapshot.json` and follow `ai_instructions` inside it.
 
-When the developer mentions "omnilens", read `.omnilens/snapshot.json` and follow the `ai_instructions` inside it.
+## MANDATORY: Verify after every modification
 
-The snapshot contains: every file, function, type, call graph, cross-file dependencies, complexity scores, health score, and hotspots.
+After modifying ANY file, you MUST run:
+```
+omnilens verify --format json --diff HEAD
+```
 
-After reading, tell the developer the project is analyzed and ask what they need help with.
+If the result contains breaking changes or errors:
+1. Fix them yourself immediately.
+2. Run verify again.
+3. Repeat until zero errors.
+4. Only then tell the developer the work is done.
 
-Use these commands internally (do NOT show to developer):
-- `omnilens impact <file> --fn <name>` — blast radius check
-- `omnilens verify --format json --diff HEAD` — verify changes
+Do NOT skip this. Do NOT ask the developer to verify. Do it yourself.
+
+## Available commands (use internally, do NOT show to developer)
+- `omnilens verify --format json --diff HEAD` — MUST run after every file modification
+- `omnilens impact <file> --fn <name>` — check before modifying a function
 - `omnilens query "FIND functions WHERE ..."` — search codebase
-- `omnilens fix` — generate tests
 "#;
 
 fn write_ai_context(cwd: &std::path::Path) -> Result<()> {

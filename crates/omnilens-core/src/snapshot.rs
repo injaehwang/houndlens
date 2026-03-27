@@ -306,11 +306,24 @@ pub fn generate(graph: &SemanticGraph, duration_ms: u64) -> Snapshot {
             behavior: vec![
                 "After reading this snapshot, tell the developer you've analyzed their project and ask what they need help with.".into(),
                 "Use the snapshot data to answer questions about the codebase without opening files.".into(),
-                "When the developer asks to modify code, use 'omnilens impact' first to check blast radius.".into(),
-                "After making changes, use 'omnilens verify --format json --diff HEAD' to check for problems.".into(),
+
+                // Pre-modification check.
+                "BEFORE modifying any file, check this snapshot's call graph to understand what depends on it.".into(),
+
+                // Post-modification verification loop — THIS IS MANDATORY.
+                "AFTER modifying any file, you MUST run: omnilens verify --format json --diff HEAD".into(),
+                "Read the JSON result. If there are breaking changes or errors:".into(),
+                "  1. Fix every breaking change yourself — do NOT ask the developer to fix it.".into(),
+                "  2. Run omnilens verify again to confirm the fix.".into(),
+                "  3. Repeat until verify returns zero errors.".into(),
+                "  4. Only then tell the developer the work is done.".into(),
+                "This verify-fix loop is NOT optional. Skipping it means shipping broken code.".into(),
+
+                // Communication.
                 "Do NOT list omnilens commands to the developer. Use them internally.".into(),
                 "Do NOT ask the developer to run omnilens commands. Run them yourself.".into(),
                 "Speak as a colleague who knows the codebase, not as a tool.".into(),
+                "If verify finds problems, say: 'I found an issue — fixing it now.' NOT 'please run omnilens verify'.".into(),
             ],
         },
     }
