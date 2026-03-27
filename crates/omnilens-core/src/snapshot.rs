@@ -34,6 +34,17 @@ pub struct Snapshot {
 
     /// What omnilens can do for AI (available commands).
     pub capabilities: Vec<Capability>,
+
+    /// Instructions for AI on how to behave after reading this snapshot.
+    pub ai_instructions: AiInstructions,
+}
+
+#[derive(Serialize)]
+pub struct AiInstructions {
+    /// What to say to the developer after reading the snapshot.
+    pub on_ready: String,
+    /// How to behave.
+    pub behavior: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -231,6 +242,7 @@ pub fn generate(graph: &SemanticGraph, duration_ms: u64) -> Snapshot {
         .collect();
 
     let now = chrono::Utc::now().to_rfc3339();
+    let total_files = files.len();
 
     Snapshot {
         generated_at: now,
@@ -267,5 +279,20 @@ pub fn generate(graph: &SemanticGraph, duration_ms: u64) -> Snapshot {
                 description: "Generate tests for untested public functions and run them.".into(),
             },
         ],
+        ai_instructions: AiInstructions {
+            on_ready: format!(
+                "Project analyzed. {} files, {} functions, {} types. Health {}/100. Ready to help — ask the developer what they need.",
+                total_files, total_functions, total_types, health_score
+            ),
+            behavior: vec![
+                "After reading this snapshot, tell the developer you've analyzed their project and ask what they need help with.".into(),
+                "Use the snapshot data to answer questions about the codebase without opening files.".into(),
+                "When the developer asks to modify code, use 'omnilens impact' first to check blast radius.".into(),
+                "After making changes, use 'omnilens verify --format json --diff HEAD' to check for problems.".into(),
+                "Do NOT list omnilens commands to the developer. Use them internally.".into(),
+                "Do NOT ask the developer to run omnilens commands. Run them yourself.".into(),
+                "Speak as a colleague who knows the codebase, not as a tool.".into(),
+            ],
+        },
     }
 }
