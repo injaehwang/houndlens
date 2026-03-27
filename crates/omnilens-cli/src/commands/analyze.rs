@@ -92,16 +92,27 @@ This project uses omnilens for code analysis. Read `.omnilens/snapshot.json` for
 
 ## MANDATORY: Verify after every modification
 
-After modifying ANY file, you MUST run:
+After modifying ANY file, you MUST do BOTH:
+
+### Step 1: omnilens verify
 ```
 omnilens verify --format json --diff HEAD
 ```
 
-If the result contains breaking changes or errors:
+### Step 2: Project's own linter/type checker (on changed files only)
+- If `tsconfig.json` or `vue` files exist: run `npx vue-tsc --noEmit` or `npx tsc --noEmit`
+- If `eslint` config exists: run `npx eslint <changed-files>`
+- If `pyproject.toml` or Python files: run `python -m py_compile <changed-file>`
+- Run these ONLY on the files you modified, NOT the entire project.
+
+### Step 3: Fix and repeat
+If EITHER step finds errors:
 1. Fix them yourself immediately.
-2. Run verify again.
-3. Repeat until zero errors.
+2. Run both checks again.
+3. Repeat until zero errors from both.
 4. Only then tell the developer the work is done.
+
+This catches: import errors, type errors, unused variables, missing components, syntax errors.
 
 Do NOT skip this. Do NOT ask the developer to verify. Do it yourself.
 

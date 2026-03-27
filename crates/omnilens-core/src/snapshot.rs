@@ -35,8 +35,23 @@ pub struct Snapshot {
     /// What omnilens can do for AI (available commands).
     pub capabilities: Vec<Capability>,
 
+    /// Project tooling detected.
+    pub tooling: Tooling,
+
     /// Instructions for AI on how to behave after reading this snapshot.
     pub ai_instructions: AiInstructions,
+}
+
+#[derive(Serialize)]
+pub struct Tooling {
+    /// Type checker command (e.g., "npx vue-tsc --noEmit", "npx tsc --noEmit").
+    pub type_check: Option<String>,
+    /// Linter command (e.g., "npx eslint").
+    pub linter: Option<String>,
+    /// Formatter command (e.g., "npx prettier --write").
+    pub formatter: Option<String>,
+    /// Test runner command (e.g., "npx vitest run", "pytest").
+    pub test_runner: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -263,6 +278,10 @@ pub fn generate(graph: &SemanticGraph, duration_ms: u64) -> Snapshot {
     let now = chrono::Utc::now().to_rfc3339();
     let total_files = files.len();
 
+    // Detect project tooling.
+    let project_root = std::env::current_dir().unwrap_or_default();
+    let tooling = detect_tooling(&project_root);
+
     Snapshot {
         generated_at: now,
         analysis_ms: duration_ms,
@@ -280,6 +299,7 @@ pub fn generate(graph: &SemanticGraph, duration_ms: u64) -> Snapshot {
             hotspots,
             invariants: invariant_descriptions,
         },
+        tooling,
         capabilities: vec![
             Capability {
                 command: "omnilens verify --format json --diff <ref>".into(),
@@ -388,4 +408,53 @@ fn is_test_name(name: &str) -> bool {
         || lower.contains("::test_")
         || lower.contains("::test")
         || lower.starts_with("test_")
+}
+
+/// Detect project tooling by checking config files.
+fn detect_tooling(root: &std::path::Path) -> Tooling {
+    let exists = |name: &str| root.join(name).exists();
+
+    // Type checker.
+    let type_check = if exists("tsconfig.json") {
+        if exists("node_modules/.bin/vue-tsc") || exists("node_modules/.bin/vue-tsc.cmd") {
+            Some("npx vue-tsc --noEmit".into())
+        } else {
+            Some("npx tsc --noEmit".into())
+        }
+    } else {
+        None
+    };
+
+    // Linter.
+    let linter = if exists(".eslintrc.js") || exists(".eslintrc.json") || exists(".eslintrc.yml")
+        || exists("eslint.config.js") || exists("eslint.config.mjs") {
+        Some("npx eslint".into())
+    } else if exists("pyproject.toml") || exists(".flake8") || exists(".pylintrc") {
+        Some("python -m pylint".into())
+    } else {
+        None
+    };
+
+    // Formatter.
+    let formatter = if exists(".prettierrc") || exists(".prettierrc.json") || exists(".prettierrc.js")
+        || exists("prettier.config.js") || exists("prettier.config.mjs") {
+        Some("npx prettier --write".into())
+    } else {
+        None
+    };
+
+    // Test runner.
+    let test_runner = if exists("vitest.config.ts") || exists("vitest.config.js") {
+        Some("npx vitest run".into())
+    } else if exists("jest.config.js") || exists("jest.config.ts") {
+        Some("npx jest".into())
+    } else if exists("pytest.ini") || exists("pyproject.toml") {
+        Some("pytest".into())
+    } else if exists("Cargo.toml") {
+        Some("cargo test".into())
+    } else {
+        None
+    };
+
+    Tooling { type_check, linter, formatter, test_runner }
 }
