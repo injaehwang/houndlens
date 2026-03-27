@@ -74,9 +74,18 @@ pub fn run() -> Result<()> {
     Ok(())
 }
 
-const AI_CONTEXT: &str = r#"# omnilens
+/// One-line pointer that goes into AI config files at project root.
+const AI_POINTER: &str = "Read `.omnilens/ai-instructions.md` for project analysis and coding rules.";
 
-This project uses omnilens for code analysis. Read `.omnilens/snapshot.json` and follow `ai_instructions` inside it.
+fn write_ai_context(cwd: &std::path::Path) -> Result<()> {
+    let omnilens_dir = cwd.join(".omnilens");
+
+    // Full instructions go inside .omnilens/ — not in project root.
+    std::fs::write(omnilens_dir.join("ai-instructions.md"), r#"# omnilens
+
+This project uses omnilens for code analysis. Read `.omnilens/snapshot.json` for the full project map.
+
+Follow the `ai_instructions` in snapshot.json.
 
 ## MANDATORY: Verify after every modification
 
@@ -97,58 +106,28 @@ Do NOT skip this. Do NOT ask the developer to verify. Do it yourself.
 - `omnilens verify --format json --diff HEAD` — MUST run after every file modification
 - `omnilens impact <file> --fn <name>` — check before modifying a function
 - `omnilens query "FIND functions WHERE ..."` — search codebase
-"#;
+"#)?;
 
-fn write_ai_context(cwd: &std::path::Path) -> Result<()> {
-    let omnilens_dir = cwd.join(".omnilens");
+    // Minimal pointers in AI config files. Append only if not already present.
+    append_if_missing(&cwd.join("CLAUDE.md"), AI_POINTER)?;
+    append_if_missing(&cwd.join(".cursorrules"), AI_POINTER)?;
+    append_if_missing(&cwd.join(".windsurfrules"), AI_POINTER)?;
 
-    // CLAUDE.md — Claude Code / Claude Desktop
-    let claude_md = cwd.join("CLAUDE.md");
-    if !claude_md.exists() {
-        std::fs::write(&claude_md, AI_CONTEXT)?;
-    } else {
-        // Append if CLAUDE.md exists but doesn't mention omnilens.
-        let content = std::fs::read_to_string(&claude_md)?;
-        if !content.contains("omnilens") {
-            std::fs::write(&claude_md, format!("{}\n\n{}", content, AI_CONTEXT))?;
-        }
-    }
-
-    // .cursorrules — Cursor
-    let cursorrules = cwd.join(".cursorrules");
-    if !cursorrules.exists() {
-        std::fs::write(&cursorrules, AI_CONTEXT)?;
-    } else {
-        let content = std::fs::read_to_string(&cursorrules)?;
-        if !content.contains("omnilens") {
-            std::fs::write(&cursorrules, format!("{}\n\n{}", content, AI_CONTEXT))?;
-        }
-    }
-
-    // .github/copilot-instructions.md — GitHub Copilot
     let copilot_dir = cwd.join(".github");
-    let copilot_md = copilot_dir.join("copilot-instructions.md");
     std::fs::create_dir_all(&copilot_dir).ok();
-    if !copilot_md.exists() {
-        std::fs::write(&copilot_md, AI_CONTEXT)?;
-    } else {
-        let content = std::fs::read_to_string(&copilot_md)?;
+    append_if_missing(&copilot_dir.join("copilot-instructions.md"), AI_POINTER)?;
+
+    Ok(())
+}
+
+fn append_if_missing(path: &std::path::Path, line: &str) -> Result<()> {
+    if path.exists() {
+        let content = std::fs::read_to_string(path)?;
         if !content.contains("omnilens") {
-            std::fs::write(&copilot_md, format!("{}\n\n{}", content, AI_CONTEXT))?;
+            std::fs::write(path, format!("{}\n{}\n", content.trim_end(), line))?;
         }
+    } else {
+        std::fs::write(path, format!("{}\n", line))?;
     }
-
-    // .windsurfrules — Windsurf
-    let windsurf = cwd.join(".windsurfrules");
-    if !windsurf.exists() {
-        std::fs::write(&windsurf, AI_CONTEXT)?;
-    }
-
-    // llms.txt — generic AI
-    let llms = cwd.join("llms.txt");
-    if !llms.exists() {
-        std::fs::write(&llms, AI_CONTEXT)?;
-    }
-
     Ok(())
 }
