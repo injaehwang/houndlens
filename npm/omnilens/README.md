@@ -2,7 +2,7 @@
 
 **Your AI's eyes into your codebase.**
 
-omnilens analyzes your entire project in milliseconds and gives AI a complete map — every file, function, type, call graph, and dependency. AI uses this to understand your code and work on it.
+omnilens analyzes your project in milliseconds and gives AI a complete map of your code. AI uses this to understand, modify, and verify your code without breaking things.
 
 ## Install
 
@@ -12,64 +12,66 @@ npm install -g omnilens
 
 ## Use
 
+### Step 1: Analyze your project
+
 ```bash
 cd your-project
 omnilens
 ```
 
-That's it. Output:
-
+Output:
 ```
-  omnilens 11ms | 13 files | 45 functions | 9 types
-  Health: 100/100
-  Cross-file deps: 23
+  omnilens 11ms | 45 files | 320 functions | 87 types
+  Health: 85/100
+  Cross-file deps: 142
 
-  .omnilens/snapshot.json
-```
-
-Now open your AI (Claude, Cursor, GPT, whatever) and start working. AI reads `snapshot.json` and understands your project instantly.
-
-## What AI gets
-
-`snapshot.json` contains:
-
-- **Every file** with functions, types, imports
-- **Call graph** — who calls what, across files
-- **Complexity scores** — which functions are risky
-- **Cross-file dependencies** — change X, Y breaks
-- **Health score** — overall project quality
-- **Hotspots** — where bugs are likely hiding
-
-AI doesn't need to open files one by one. It gets the full picture in one read.
-
-## What AI can do with omnilens
-
-When AI needs deeper analysis, it calls omnilens internally:
-
-```bash
-# "What breaks if I change this function?"
-omnilens impact src/auth.ts --fn login
-
-# "Did my changes break anything?"
-omnilens verify --format json --diff HEAD~1
-
-# "Find all complex functions"
-omnilens query "FIND functions WHERE complexity > 15"
-
-# "Generate tests for untested code"
-omnilens fix
+  Tell your AI: "let's start omnilens"
 ```
 
-You don't run these. AI does.
+### Step 2: Tell your AI to start
+
+Open your AI tool and say:
+
+| AI tool | What to type |
+|---------|-------------|
+| Claude Code | `let's start omnilens` |
+| Cursor | `let's start omnilens` |
+| Gemini | `let's start omnilens` |
+| ChatGPT | `let's start omnilens` |
+| Windsurf | `let's start omnilens` |
+| Any AI | `let's start omnilens` |
+
+AI reads the analysis and responds:
+
+> "Project analyzed. 45 files, 320 functions. What would you like to do?"
+
+### Step 3: Work with your AI
+
+Just tell it what you need. AI uses omnilens internally to verify its work.
+
+```
+You: "Add empty state handling to all tables"
+You: "Fix the login function — it's not handling errors"
+You: "Refactor auth service into smaller functions"
+```
+
+AI modifies your code, checks for breaking changes, and fixes them automatically.
+
+## How it works
+
+1. `omnilens` creates `.omnilens/snapshot.json` — a complete map of your project
+2. AI reads the snapshot and understands every file, function, and dependency
+3. When AI modifies code, it runs `omnilens verify` to catch errors
+4. If something breaks, AI fixes it before telling you it's done
 
 ## Supported languages
 
-Rust, TypeScript, JavaScript, Python
+Rust · TypeScript · JavaScript · Python
 
 ## Performance
 
-| Project size | Analysis time |
-|-------------|---------------|
+| Project size | Time |
+|-------------|------|
 | 10 files | ~10ms |
 | 100 files | ~100ms |
 | 1000 files | ~1s |
