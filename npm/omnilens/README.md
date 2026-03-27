@@ -1,8 +1,8 @@
 # omnilens
 
-**Your AI's eyes into your codebase.**
+**Give your AI the full picture.**
 
-omnilens analyzes your project in milliseconds and gives AI a complete map of your code. AI uses this to understand, modify, and verify your code without breaking things.
+omnilens analyzes your entire project in milliseconds — every file, function, dependency, and impact chain. AI sees the full picture, works faster, and doesn't break things.
 
 ## Install
 
