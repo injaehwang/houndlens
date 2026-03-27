@@ -163,10 +163,33 @@ pub fn run_verification(
         }
     }
 
-    // Step 4: Invariant checking.
+    // Step 4: Syntax validation on changed files.
+    let syntax_errors = crate::syntax_check::check_syntax(&changed_files, frontends);
+    for err in &syntax_errors {
+        let severity = match err.severity {
+            crate::syntax_check::SyntaxSeverity::Error => ChangeRisk::Breaking,
+            crate::syntax_check::SyntaxSeverity::Warning => ChangeRisk::NeedsReview,
+        };
+        semantic_changes.push(SemanticChange {
+            location: omnilens_ir::SourceSpan {
+                file: std::path::PathBuf::from(&err.file),
+                start_byte: 0,
+                end_byte: 0,
+                start_line: err.line,
+                start_col: err.col,
+                end_line: err.line,
+                end_col: err.col,
+            },
+            kind: SemanticChangeKind::ControlFlowChange,
+            description: err.message.clone(),
+            risk: severity,
+        });
+    }
+
+    // Step 5: Invariant checking.
     let invariant_violations = check_invariants_on_changes(graph, &changed_files);
 
-    // Step 5: Compute risk score.
+    // Step 6: Compute risk score.
     let mut risk_score: f64 = 0.0;
     for change in &semantic_changes {
         risk_score += match change.risk {
@@ -182,7 +205,7 @@ pub fn run_verification(
     }
     risk_score = risk_score.min(1.0);
 
-    // Step 6: Generate test suggestions.
+    // Step 7: Generate test suggestions.
     let suggested_tests = generate_test_suggestions(graph, &changed_files);
 
     let confidence = if base_ref.is_some() { 0.85 } else { 0.5 };
