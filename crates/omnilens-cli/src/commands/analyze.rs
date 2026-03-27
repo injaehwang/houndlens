@@ -68,14 +68,14 @@ pub fn run() -> Result<()> {
     }
 
     println!();
-    println!("  Tell your AI: {}", "\"Review the omnilens snapshot\"".cyan());
+    println!("  Tell your AI: {}", "\"let's start omnilens\"".cyan());
     println!();
 
     Ok(())
 }
 
 /// One-line pointer that goes into AI config files at project root.
-const AI_POINTER: &str = "Read `.omnilens/ai-instructions.md` for project analysis and coding rules.";
+const AI_POINTER: &str = "When the developer says \"omnilens\", \"let's start omnilens\", \"start omnilens\", or anything mentioning omnilens, read `.omnilens/ai-instructions.md` and `.omnilens/snapshot.json`, then follow the instructions.";
 
 fn write_ai_context(cwd: &std::path::Path) -> Result<()> {
     let omnilens_dir = cwd.join(".omnilens");
@@ -83,9 +83,12 @@ fn write_ai_context(cwd: &std::path::Path) -> Result<()> {
     // Full instructions go inside .omnilens/ — not in project root.
     std::fs::write(omnilens_dir.join("ai-instructions.md"), r#"# omnilens
 
-This project uses omnilens for code analysis. Read `.omnilens/snapshot.json` for the full project map.
+When the developer says "omnilens", "let's start omnilens", "start omnilens", or anything mentioning omnilens:
+1. Read `.omnilens/snapshot.json`
+2. Follow the `ai_instructions` inside it
+3. Tell the developer the project is analyzed and ask what they need
 
-Follow the `ai_instructions` in snapshot.json.
+This project uses omnilens for code analysis. Read `.omnilens/snapshot.json` for the full project map.
 
 ## MANDATORY: Verify after every modification
 
