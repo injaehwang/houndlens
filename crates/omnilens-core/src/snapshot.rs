@@ -330,13 +330,12 @@ pub fn generate(graph: &SemanticGraph, duration_ms: u64) -> Snapshot {
                 // Pre-modification.
                 "BEFORE modifying any file, check the call graph in summary.json to understand dependencies.".into(),
 
-                // Post-modification — rescan + verify loop.
-                "AFTER modifying any file, run `omnilens` (~10ms) to regenerate summary.json and changes.json.".into(),
-                "Read .omnilens/changes.json to see exactly what your edit affected — broken deps, added/removed functions, health delta.".into(),
-                "Then run `omnilens verify --format json --diff HEAD` to catch syntax errors and breaking changes.".into(),
-                "Run project linter/formatter from tooling section on ONLY the files you changed.".into(),
-                "If anything is wrong, fix it, run `omnilens` again, read changes.json again. Repeat until clean.".into(),
-                "omnilens takes ~10ms. Run it after EVERY edit. Use changes.json as your real-time feedback.".into(),
+                // Post-modification — rescan + verify (once per logical change, not per file).
+                "After completing a logical unit of work (not per file), run `omnilens` (~10ms) then read .omnilens/changes.json.".into(),
+                "changes.json shows exactly what was affected: broken deps, added/removed functions, health delta.".into(),
+                "Then run `omnilens verify --format json --diff HEAD` for syntax and breaking change check.".into(),
+                "Run project linter/formatter from tooling on ONLY the files you changed.".into(),
+                "If errors found, fix and repeat the cycle. If editing 5 files for one task, finish all 5 first, then check once.".into(),
 
                 // Scope.
                 "NEVER run any tool on the entire project. Only on files you changed.".into(),

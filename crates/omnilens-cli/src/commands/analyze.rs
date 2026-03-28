@@ -125,36 +125,32 @@ For detailed data, use omnilens commands (verify, impact, query).
 4. **You operate within boundaries.** Only modify what's needed. Don't touch what you weren't asked to touch.
 5. **You verify your work.** Never mark anything complete without confirming it works.
 
-## After Every Modification
+## After Completing a Logical Change
 
-omnilens analysis takes ~10ms. Use it aggressively. Every time you modify a file:
+When you finish a logical unit of work (not after every single file edit), run this:
 
-### Step 1: Rescan
+### Step 1: Rescan (~10ms)
 ```
 omnilens
 ```
-This regenerates `summary.json` and `changes.json` in milliseconds. It's nearly free.
+This regenerates `summary.json` and `changes.json`. Read `changes.json` — it shows exactly what your modifications affected: broken dependencies, added/removed functions, health delta.
 
-### Step 2: Read changes
-Read `.omnilens/changes.json`. It tells you exactly what your modification affected:
-- Which files changed
-- Which functions were added/removed
-- Which dependencies broke
-- Health score delta
-
-### Step 3: Verify
+### Step 2: Verify (changed files only)
 ```
 omnilens verify --format json --diff HEAD
 ```
-This catches syntax errors, bracket mismatches, breaking changes — on changed files only.
+Catches syntax errors, bracket mismatches, breaking changes.
 
-### Step 4: Project lint (changed files only)
+### Step 3: Project lint (changed files only)
 Use the project's own tools from `summary.json → tooling`, targeting ONLY files you changed.
 
-### Step 5: Fix and repeat
-If any step finds errors, fix them. Run `omnilens` again. Read `changes.json` again. Repeat until clean.
+### Step 4: Fix and repeat
+If any step finds errors, fix them. Then go back to Step 1.
 
-The key insight: `omnilens` is ~10ms. Run it after every edit, not just at the end. Use `changes.json` as your real-time feedback loop.
+### When to run this cycle
+- After finishing all modifications for a task — NOT after every single file save.
+- If you're editing 5 files for one task, finish all 5 first, then run this cycle once.
+- Exception: if you're unsure whether a change broke something, run it mid-task. It's only 10ms.
 
 ## Scope Rules — CRITICAL
 
