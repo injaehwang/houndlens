@@ -349,6 +349,180 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "houndlens"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "colored",
+ "houndlens-core",
+ "houndlens-frontend-python",
+ "houndlens-frontend-rust",
+ "houndlens-frontend-typescript",
+ "houndlens-graph",
+ "houndlens-ir",
+ "houndlens-query",
+ "ignore",
+ "serde_json",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "houndlens-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "houndlens-graph",
+ "houndlens-index",
+ "houndlens-ir",
+ "houndlens-query",
+ "houndlens-storage",
+ "houndlens-testgen",
+ "rayon",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
+name = "houndlens-frontend-python"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "houndlens-core",
+ "houndlens-ir",
+ "tracing",
+ "tree-sitter",
+ "tree-sitter-python",
+]
+
+[[package]]
+name = "houndlens-frontend-rust"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "houndlens-core",
+ "houndlens-ir",
+ "tracing",
+ "tree-sitter",
+ "tree-sitter-rust",
+]
+
+[[package]]
+name = "houndlens-frontend-typescript"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "houndlens-core",
+ "houndlens-ir",
+ "tracing",
+ "tree-sitter",
+ "tree-sitter-typescript",
+]
+
+[[package]]
+name = "houndlens-graph"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "houndlens-ir",
+ "petgraph",
+ "serde",
+ "tracing",
+]
+
+[[package]]
+name = "houndlens-index"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "houndlens-ir",
+ "ignore",
+ "sha2",
+ "tracing",
+ "walkdir",
+]
+
+[[package]]
+name = "houndlens-ir"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "hex",
+ "serde",
+ "sha2",
+]
+
+[[package]]
+name = "houndlens-lsp"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "houndlens-core",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "houndlens-plugin"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "houndlens-ir",
+ "serde",
+]
+
+[[package]]
+name = "houndlens-query"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "houndlens-graph",
+ "houndlens-ir",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "houndlens-runtime"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "houndlens-graph",
+ "houndlens-ir",
+ "tracing",
+]
+
+[[package]]
+name = "houndlens-storage"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "hex",
+ "houndlens-ir",
+ "memmap2",
+ "redb",
+ "serde",
+]
+
+[[package]]
+name = "houndlens-testgen"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "houndlens-graph",
+ "houndlens-ir",
+ "serde",
+]
+
+[[package]]
 name = "iana-time-zone"
 version = "0.1.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -498,180 +672,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
-]
-
-[[package]]
-name = "omnilens"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "colored",
- "ignore",
- "omnilens-core",
- "omnilens-frontend-python",
- "omnilens-frontend-rust",
- "omnilens-frontend-typescript",
- "omnilens-graph",
- "omnilens-ir",
- "omnilens-query",
- "serde_json",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "omnilens-core"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "omnilens-graph",
- "omnilens-index",
- "omnilens-ir",
- "omnilens-query",
- "omnilens-storage",
- "omnilens-testgen",
- "rayon",
- "serde",
- "serde_json",
- "thiserror",
- "tracing",
-]
-
-[[package]]
-name = "omnilens-frontend-python"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "omnilens-core",
- "omnilens-ir",
- "tracing",
- "tree-sitter",
- "tree-sitter-python",
-]
-
-[[package]]
-name = "omnilens-frontend-rust"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "omnilens-core",
- "omnilens-ir",
- "tracing",
- "tree-sitter",
- "tree-sitter-rust",
-]
-
-[[package]]
-name = "omnilens-frontend-typescript"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "omnilens-core",
- "omnilens-ir",
- "tracing",
- "tree-sitter",
- "tree-sitter-typescript",
-]
-
-[[package]]
-name = "omnilens-graph"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bincode",
- "omnilens-ir",
- "petgraph",
- "serde",
- "tracing",
-]
-
-[[package]]
-name = "omnilens-index"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "ignore",
- "omnilens-ir",
- "sha2",
- "tracing",
- "walkdir",
-]
-
-[[package]]
-name = "omnilens-ir"
-version = "0.1.0"
-dependencies = [
- "bincode",
- "hex",
- "serde",
- "sha2",
-]
-
-[[package]]
-name = "omnilens-lsp"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "omnilens-core",
- "serde_json",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "omnilens-plugin"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "omnilens-ir",
- "serde",
-]
-
-[[package]]
-name = "omnilens-query"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "omnilens-graph",
- "omnilens-ir",
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "omnilens-runtime"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "omnilens-graph",
- "omnilens-ir",
- "tracing",
-]
-
-[[package]]
-name = "omnilens-storage"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bincode",
- "hex",
- "memmap2",
- "omnilens-ir",
- "redb",
- "serde",
-]
-
-[[package]]
-name = "omnilens-testgen"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "omnilens-graph",
- "omnilens-ir",
- "serde",
 ]
 
 [[package]]

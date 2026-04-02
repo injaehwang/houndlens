@@ -1,12 +1,12 @@
 {
-  "name": "@omnilens/mcp-server",
+  "name": "@houndlens/mcp-server",
   "version": "0.1.0",
-  "description": "MCP server for omnilens — allows AI agents to verify code, run impact analysis, and query codebases",
+  "description": "MCP server for houndlens — allows AI agents to verify code, run impact analysis, and query codebases",
   "main": "index.js",
   "type": "module",
   "bin": {
-    "omnilens-mcp": "./index.js"
+    "houndlens-mcp": "./index.js"
   },
-  "keywords": ["mcp", "omnilens", "code-analysis", "ai-native", "verification"],
+  "keywords": ["mcp", "houndlens", "code-analysis", "ai-native", "verification"],
   "license": "Apache-2.0 OR MIT"
 }

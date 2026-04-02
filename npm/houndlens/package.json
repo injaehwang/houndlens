@@ -1,0 +1,28 @@
+{
+  "name": "houndlens",
+  "version": "2.1.0",
+  "description": "Give your AI the full picture. Save your tokens.",
+  "license": "Apache-2.0 OR MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/injaehwang/houndlens"
+  },
+  "bin": {
+    "houndlens": "bin/houndlens"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "keywords": [
+    "code-analysis",
+    "verification",
+    "ai",
+    "semantic-diff",
+    "houndlens"
+  ],
+  "files": [
+    "bin",
+    "install.js",
+    "README.md"
+  ]
+}

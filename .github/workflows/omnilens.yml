@@ -1,4 +1,4 @@
-name: omnilens verify
+name: houndlens verify
 
 on:
   pull_request:
@@ -21,10 +21,10 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Install omnilens
+      - name: Install houndlens
         run: cargo install --path .
 
-      - name: Run omnilens verify
+      - name: Run houndlens verify
         uses: ./
         with:
           comment: "true"

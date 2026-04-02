@@ -1,37 +1,37 @@
 # CI/CD Setup Guide
 
-omnilens works with **any CI platform** and **any git hosting**. No vendor lock-in.
+houndlens works with **any CI platform** and **any git hosting**. No vendor lock-in.
 
 ## Quick start (any platform)
 
 ```bash
 # One-line setup for any CI
-curl -fsSL https://raw.githubusercontent.com/injaehwang/omnilens/main/ci/generic.sh | bash
+curl -fsSL https://raw.githubusercontent.com/injaehwang/houndlens/main/ci/generic.sh | bash
 ```
 
 Or in your CI config:
 ```bash
-cargo install omnilens
-omnilens ci
+cargo install houndlens
+houndlens ci
 ```
 
-The `omnilens ci` command auto-detects your platform (GitHub, GitLab, or local) and adjusts behavior accordingly.
+The `houndlens ci` command auto-detects your platform (GitHub, GitLab, or local) and adjusts behavior accordingly.
 
 ## Local development (no CI needed)
 
 ### Git hooks (recommended)
 
 ```bash
-omnilens hook install
+houndlens hook install
 ```
 
 This installs:
-- **pre-commit**: Runs `omnilens verify` on staged changes before each commit
+- **pre-commit**: Runs `houndlens verify` on staged changes before each commit
 - **pre-push**: Checks for breaking changes before pushing
 
 ```bash
-omnilens hook status    # Check what's installed
-omnilens hook uninstall # Remove hooks (restores backups)
+houndlens hook status    # Check what's installed
+houndlens hook uninstall # Remove hooks (restores backups)
 ```
 
 Bypass when needed: `git commit --no-verify`
@@ -40,22 +40,22 @@ Bypass when needed: `git commit --no-verify`
 
 ```bash
 # Verify working directory changes
-omnilens verify
+houndlens verify
 
 # Verify against last commit
-omnilens verify --diff HEAD~1
+houndlens verify --diff HEAD~1
 
 # Verify against main branch
-omnilens verify --diff main
+houndlens verify --diff main
 
 # Verify specific files
-omnilens verify --files src/auth.rs --files src/db.rs
+houndlens verify --files src/auth.rs --files src/db.rs
 ```
 
 ## GitHub Actions
 
 ```yaml
-# .github/workflows/omnilens.yml
+# .github/workflows/houndlens.yml
 on: [pull_request]
 jobs:
   verify:
@@ -64,13 +64,13 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo install omnilens
-      - run: omnilens ci
+      - run: cargo install houndlens
+      - run: houndlens ci
 ```
 
 Or use the action directly:
 ```yaml
-      - uses: injaehwang/omnilens@v1
+      - uses: injaehwang/houndlens@v1
         with:
           comment: "true"
           fail-on: "error"
@@ -81,20 +81,20 @@ Or use the action directly:
 ```yaml
 # .gitlab-ci.yml
 include:
-  - remote: 'https://raw.githubusercontent.com/injaehwang/omnilens/main/ci/gitlab-ci.yml'
+  - remote: 'https://raw.githubusercontent.com/injaehwang/houndlens/main/ci/gitlab-ci.yml'
 ```
 
 Or manually:
 ```yaml
-omnilens:
+houndlens:
   stage: test
   image: rust:latest
   script:
-    - cargo install omnilens
-    - omnilens ci --platform gitlab
+    - cargo install houndlens
+    - houndlens ci --platform gitlab
   artifacts:
     reports:
-      dotenv: omnilens.env
+      dotenv: houndlens.env
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 ```
@@ -109,12 +109,12 @@ pipeline {
     stages {
         stage('Verify') {
             steps {
-                sh 'cargo install omnilens'
-                sh 'omnilens ci --fail-on error'
+                sh 'cargo install houndlens'
+                sh 'houndlens ci --fail-on error'
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'omnilens-report.json', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'houndlens-report.json', allowEmptyArchive: true
                 }
             }
         }
@@ -129,13 +129,13 @@ pipelines:
   pull-requests:
     '**':
       - step:
-          name: omnilens verify
+          name: houndlens verify
           image: rust:latest
           script:
-            - cargo install omnilens
-            - omnilens ci --fail-on error
+            - cargo install houndlens
+            - houndlens ci --fail-on error
           artifacts:
-            - omnilens-report.json
+            - houndlens-report.json
 ```
 
 ## Azure DevOps
@@ -155,9 +155,9 @@ steps:
   - script: |
       curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
       source $HOME/.cargo/env
-      cargo install omnilens
-      omnilens ci --fail-on error
-    displayName: 'omnilens verify'
+      cargo install houndlens
+      houndlens ci --fail-on error
+    displayName: 'houndlens verify'
 ```
 
 ## CircleCI
@@ -170,10 +170,10 @@ jobs:
       - image: rust:latest
     steps:
       - checkout
-      - run: cargo install omnilens
-      - run: omnilens ci --fail-on error
+      - run: cargo install houndlens
+      - run: houndlens ci --fail-on error
       - store_artifacts:
-          path: omnilens-report.json
+          path: houndlens-report.json
 
 workflows:
   verify:
@@ -183,7 +183,7 @@ workflows:
 
 ## Environment variables
 
-`omnilens ci` reads these standard CI variables automatically:
+`houndlens ci` reads these standard CI variables automatically:
 
 | Variable | Platform | Purpose |
 |----------|----------|---------|
@@ -203,16 +203,16 @@ workflows:
 Override defaults with environment variables:
 
 ```bash
-OMNILENS_DIFF_BASE=main omnilens ci          # Compare against main
-OMNILENS_FAIL_ON=warning omnilens ci         # Stricter threshold
-OMNILENS_FORMAT=json omnilens ci             # JSON output
+HOUNDLENS_DIFF_BASE=main houndlens ci          # Compare against main
+HOUNDLENS_FAIL_ON=warning houndlens ci         # Stricter threshold
+HOUNDLENS_FORMAT=json houndlens ci             # JSON output
 ```
 
 Or CLI flags:
 
 ```bash
-omnilens ci --platform gitlab --fail-on warning
-omnilens --format sarif ci                    # SARIF for code scanning
+houndlens ci --platform gitlab --fail-on warning
+houndlens --format sarif ci                    # SARIF for code scanning
 ```
 
 ## Output formats

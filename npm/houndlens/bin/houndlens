@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+const { existsSync } = require("fs");
+const { join } = require("path");
+const { spawnSync, execSync } = require("child_process");
+
+const ext = process.platform === "win32" ? ".exe" : "";
+const binDir = join(__dirname, "..", "bin");
+const binary = join(binDir, `houndlens-bin${ext}`);
+
+// If binary missing, download it now.
+if (!existsSync(binary)) {
+  console.log("houndlens: binary not found, downloading...");
+  try {
+    const installScript = join(__dirname, "..", "install.js");
+    execSync(`node "${installScript}"`, { stdio: "inherit" });
+  } catch {
+    console.error("houndlens: download failed.");
+    console.error("Install manually: cargo install --git https://github.com/injaehwang/houndlens");
+    process.exit(1);
+  }
+}
+
+// Run binary.
+if (!existsSync(binary)) {
+  console.error("houndlens: binary still not found after download.");
+  console.error("Install manually: cargo install --git https://github.com/injaehwang/houndlens");
+  process.exit(1);
+}
+
+const result = spawnSync(binary, process.argv.slice(2), {
+  stdio: "inherit",
+  windowsHide: true,
+});
+
+if (result.error) {
+  console.error("houndlens: failed to execute binary.");
+  console.error(result.error.message);
+  process.exit(1);
+}
+
+process.exit(result.status ?? 1);

@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "omnilens"
+name = "houndlens"
 version = "0.1.0"
 description = "AI-native code verification engine — Python SDK"
 readme = "README.md"
 license = "Apache-2.0 OR MIT"
 requires-python = ">=3.10"
-keywords = ["code-analysis", "verification", "ai", "semantic-diff", "omnilens"]
+keywords = ["code-analysis", "verification", "ai", "semantic-diff", "houndlens"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

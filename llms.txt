@@ -1,13 +1,13 @@
-# omnilens
+# houndlens
 
 > AI-native code verification engine. Parses Rust/TypeScript/Python into a semantic graph, detects behavioral changes, discovers invariants, and answers queries about your codebase.
 
 ## Installation
 
 ```bash
-cargo install omnilens
+cargo install houndlens
 # or from source:
-git clone https://github.com/injaehwang/omnilens && cd omnilens && cargo install --path .
+git clone https://github.com/injaehwang/houndlens && cd houndlens && cargo install --path .
 ```
 
 ## Usage
@@ -15,24 +15,24 @@ git clone https://github.com/injaehwang/omnilens && cd omnilens && cargo install
 ### Index a project
 ```bash
 cd your-project
-omnilens init
-omnilens index
+houndlens init
+houndlens index
 # Output: Indexed 42 files | 1404 nodes | 1915 edges | 110ms
 ```
 
 ### Verify changes (semantic diff)
 ```bash
 # Compare against previous commit
-omnilens verify --diff HEAD~1
+houndlens verify --diff HEAD~1
 
 # Compare against a branch
-omnilens verify --diff main
+houndlens verify --diff main
 
 # JSON output for CI/CD
-omnilens --format json verify --diff HEAD~1
+houndlens --format json verify --diff HEAD~1
 
 # SARIF for GitHub Code Scanning
-omnilens --format sarif verify --diff HEAD~1
+houndlens --format sarif verify --diff HEAD~1
 ```
 
 Verify detects:
@@ -46,41 +46,41 @@ Verify detects:
 ### Impact analysis
 ```bash
 # What calls this function? What does it call?
-omnilens impact src/auth.rs --fn verify_token --depth 5
+houndlens impact src/auth.rs --fn verify_token --depth 5
 ```
 
 ### Discover invariants
 ```bash
-omnilens invariants
+houndlens invariants
 # Auto-discovers: naming conventions, error handling patterns,
 # call ordering rules, type usage constraints
 ```
 
-### Query the codebase (OmniQL)
+### Query the codebase (HoundQL)
 ```bash
 # Find complex functions
-omnilens query "FIND functions WHERE complexity > 15"
+houndlens query "FIND functions WHERE complexity > 15"
 
 # Find public async functions
-omnilens query "FIND functions WHERE visibility = public AND async = true"
+houndlens query "FIND functions WHERE visibility = public AND async = true"
 
 # Find functions that call a specific API
-omnilens query "FIND functions WHERE calls(db.query)"
+houndlens query "FIND functions WHERE calls(db.query)"
 
 # Find large structs
-omnilens query "FIND types WHERE fields > 5"
+houndlens query "FIND types WHERE fields > 5"
 
 # Find all traits
-omnilens query "FIND types WHERE kind = trait"
+houndlens query "FIND types WHERE kind = trait"
 
 # Pattern matching on names
-omnilens query 'FIND functions WHERE name ~ "*test*"'
+houndlens query 'FIND functions WHERE name ~ "*test*"'
 
 # Negation
-omnilens query "FIND functions WHERE NOT calls(unwrap)"
+houndlens query "FIND functions WHERE NOT calls(unwrap)"
 ```
 
-## OmniQL Reference
+## HoundQL Reference
 
 ### Targets
 - `functions` / `fn` — function/method definitions
@@ -168,7 +168,7 @@ When using `--format json`, verify produces:
 ## GitHub Action
 
 ```yaml
-- uses: injaehwang/omnilens@v1
+- uses: injaehwang/houndlens@v1
   with:
     comment: "true"    # Post PR comment with results
     fail-on: "error"   # Fail on: error, warning, never

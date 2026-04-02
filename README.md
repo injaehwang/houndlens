@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/assets/logo-placeholder.svg" alt="omnilens" width="200" />
+  <img src="docs/assets/logo-placeholder.svg" alt="houndlens" width="200" />
 </p>
 
-<h1 align="center">omnilens</h1>
+<h1 align="center">houndlens</h1>
 
 <p align="center">
   <strong>Universal Codebase Intelligence Engine</strong><br/>
@@ -19,44 +19,44 @@
 
 ---
 
-## What is omnilens?
+## What is houndlens?
 
-omnilens is a **language-agnostic code intelligence engine** that builds a semantic understanding of your entire codebase. It combines static analysis, data flow tracking, and runtime profiling to answer the questions developers ask every day:
+houndlens is a **language-agnostic code intelligence engine** that builds a semantic understanding of your entire codebase. It combines static analysis, data flow tracking, and runtime profiling to answer the questions developers ask every day:
 
-- **"If I change this function, what breaks?"** → `omnilens impact`
-- **"Where is user input used without sanitization?"** → `omnilens query`
-- **"Why is this endpoint slow?"** → `omnilens trace`
-- **"What tests am I missing?"** → `omnilens testgen`
+- **"If I change this function, what breaks?"** → `houndlens impact`
+- **"Where is user input used without sanitization?"** → `houndlens query`
+- **"Why is this endpoint slow?"** → `houndlens trace`
+- **"What tests am I missing?"** → `houndlens testgen`
 
-Unlike traditional linters or LSP servers that work at the syntax level, omnilens operates on a **Universal Semantic IR** — a language-independent intermediate representation that captures meaning, not just structure.
+Unlike traditional linters or LSP servers that work at the syntax level, houndlens operates on a **Universal Semantic IR** — a language-independent intermediate representation that captures meaning, not just structure.
 
 ## Installation
 
 ```bash
 # From source (requires Rust 1.75+)
-cargo install omnilens
+cargo install houndlens
 
 # Or download prebuilt binary
-curl -fsSL https://omnilens.dev/install.sh | sh
+curl -fsSL https://houndlens.dev/install.sh | sh
 ```
 
 ## Quick Start
 
 ```bash
-# Initialize omnilens in your project (auto-detects languages)
-omnilens init
+# Initialize houndlens in your project (auto-detects languages)
+houndlens init
 
 # Analyze impact of a change
-omnilens impact src/auth/token.rs --fn verify
+houndlens impact src/auth/token.rs --fn verify
 
 # Query across all languages
-omnilens query "functions that read from database without error handling"
+houndlens query "functions that read from database without error handling"
 
 # Live runtime tracing
-omnilens trace --attach pid:4521
+houndlens trace --attach pid:4521
 
 # Generate missing tests
-omnilens testgen src/payment/checkout.rs --strategy boundary
+houndlens testgen src/payment/checkout.rs --strategy boundary
 ```
 
 ## Features
@@ -65,7 +65,7 @@ omnilens testgen src/payment/checkout.rs --strategy boundary
 Predict the full blast radius of any code change — direct callers, transitive dependencies, affected API endpoints, and test coverage gaps.
 
 ### 🌐 Universal Semantic Graph
-Query your codebase semantically across all languages using OmniQL. Find patterns, anti-patterns, and security vulnerabilities regardless of implementation language.
+Query your codebase semantically across all languages using HoundQL. Find patterns, anti-patterns, and security vulnerabilities regardless of implementation language.
 
 ### ⚡ Runtime-Aware Analysis
 Overlay runtime profiling data (via eBPF/ETW/DTrace) onto static analysis graphs. See how code actually executes, not just how it's written.
@@ -84,7 +84,7 @@ See [docs/architecture.md](docs/architecture.md) for the full technical deep-div
 ┌──────────────────────────────────────────────────────┐
 │                  CLI / IDE Plugin (LSP)               │
 ├──────────────────────────────────────────────────────┤
-│                 Query Engine (OmniQL)                 │
+│                 Query Engine (HoundQL)                 │
 ├────────┬──────────┬───────────┬───────────────────── ┤
 │Semantic│Data Flow │ Runtime   │ Cross-Repo            │
 │Graph   │Analyzer  │ Profiler  │ Intelligence          │

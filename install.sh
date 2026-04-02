@@ -1,12 +1,12 @@
 #!/bin/sh
-# omnilens installer
-# Usage: curl -fsSL https://omnilens.dev/install.sh | sh
-#    or: curl -fsSL https://raw.githubusercontent.com/injaehwang/omnilens/main/install.sh | sh
+# houndlens installer
+# Usage: curl -fsSL https://houndlens.dev/install.sh | sh
+#    or: curl -fsSL https://raw.githubusercontent.com/injaehwang/houndlens/main/install.sh | sh
 
 set -eu
 
-REPO="injaehwang/omnilens"
-INSTALL_DIR="${OMNILENS_INSTALL_DIR:-$HOME/.omnilens/bin}"
+REPO="injaehwang/houndlens"
+INSTALL_DIR="${HOUNDLENS_INSTALL_DIR:-$HOME/.houndlens/bin}"
 
 # Detect platform.
 detect_platform() {
@@ -41,15 +41,15 @@ main() {
     PLATFORM=$(detect_platform)
     echo "Detected platform: ${PLATFORM}"
 
-    VERSION="${OMNILENS_VERSION:-$(get_latest_version)}"
+    VERSION="${HOUNDLENS_VERSION:-$(get_latest_version)}"
     if [ -z "$VERSION" ]; then
-        echo "Could not determine latest version. Set OMNILENS_VERSION manually."
+        echo "Could not determine latest version. Set HOUNDLENS_VERSION manually."
         exit 1
     fi
-    echo "Installing omnilens ${VERSION}..."
+    echo "Installing houndlens ${VERSION}..."
 
     # Determine download URL.
-    ARTIFACT="omnilens-${PLATFORM}"
+    ARTIFACT="houndlens-${PLATFORM}"
     if [ "$PLATFORM" = "win32-x64" ]; then
         URL="https://github.com/${REPO}/releases/download/${VERSION}/${ARTIFACT}.zip"
     else
@@ -64,18 +64,18 @@ main() {
     echo "Downloading ${URL}..."
 
     if [ "$PLATFORM" = "win32-x64" ]; then
-        curl -fsSL "$URL" -o "${TMPDIR}/omnilens.zip"
-        unzip -o "${TMPDIR}/omnilens.zip" -d "${TMPDIR}" > /dev/null
+        curl -fsSL "$URL" -o "${TMPDIR}/houndlens.zip"
+        unzip -o "${TMPDIR}/houndlens.zip" -d "${TMPDIR}" > /dev/null
     else
         curl -fsSL "$URL" | tar xz -C "${TMPDIR}"
     fi
 
     # Install binary.
-    if [ -f "${TMPDIR}/omnilens" ]; then
-        mv "${TMPDIR}/omnilens" "${INSTALL_DIR}/omnilens"
-        chmod +x "${INSTALL_DIR}/omnilens"
-    elif [ -f "${TMPDIR}/omnilens.exe" ]; then
-        mv "${TMPDIR}/omnilens.exe" "${INSTALL_DIR}/omnilens.exe"
+    if [ -f "${TMPDIR}/houndlens" ]; then
+        mv "${TMPDIR}/houndlens" "${INSTALL_DIR}/houndlens"
+        chmod +x "${INSTALL_DIR}/houndlens"
+    elif [ -f "${TMPDIR}/houndlens.exe" ]; then
+        mv "${TMPDIR}/houndlens.exe" "${INSTALL_DIR}/houndlens.exe"
     else
         echo "Error: binary not found in download"
         exit 1
@@ -95,7 +95,7 @@ main() {
             esac
 
             echo ""
-            echo "Add omnilens to your PATH:"
+            echo "Add houndlens to your PATH:"
             echo ""
             if [ "$SHELL_NAME" = "fish" ]; then
                 echo "  fish_add_path ${INSTALL_DIR}"
@@ -107,12 +107,12 @@ main() {
     esac
 
     echo ""
-    echo "✓ omnilens ${VERSION} installed to ${INSTALL_DIR}"
+    echo "✓ houndlens ${VERSION} installed to ${INSTALL_DIR}"
     echo ""
     echo "Get started:"
     echo "  cd your-project"
-    echo "  omnilens init && omnilens index"
-    echo "  omnilens verify --diff HEAD~1"
+    echo "  houndlens init && houndlens index"
+    echo "  houndlens verify --diff HEAD~1"
 }
 
 main "$@"

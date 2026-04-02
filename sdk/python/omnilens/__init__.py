@@ -1,18 +1,18 @@
 """
-omnilens — AI-native code verification engine.
+houndlens — AI-native code verification engine.
 
-Python SDK for calling omnilens from any AI framework
+Python SDK for calling houndlens from any AI framework
 (LangChain, LlamaIndex, CrewAI, AutoGen, OpenAI Assistants, etc.)
 
 Usage:
-    from omnilens import Omnilens
+    from houndlens import Houndlens
 
-    lens = Omnilens("/path/to/project")
+    lens = Houndlens("/path/to/project")
     result = lens.verify(diff="HEAD~1")
     print(result.risk_score)
     print(result.semantic_changes)
 
-    # OmniQL query
+    # HoundQL query
     matches = lens.query("FIND functions WHERE complexity > 10")
 
     # Impact analysis
@@ -22,7 +22,7 @@ Usage:
     invariants = lens.invariants()
 """
 
-from .client import Omnilens, VerifyResult, ImpactResult, QueryResult
+from .client import Houndlens, VerifyResult, ImpactResult, QueryResult
 
 __version__ = "0.1.0"
-__all__ = ["Omnilens", "VerifyResult", "ImpactResult", "QueryResult"]
+__all__ = ["Houndlens", "VerifyResult", "ImpactResult", "QueryResult"]

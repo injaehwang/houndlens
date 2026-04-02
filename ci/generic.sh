@@ -1,30 +1,30 @@
 #!/bin/bash
-# omnilens generic CI script
+# houndlens generic CI script
 # Works with: Jenkins, Bitbucket Pipelines, Azure DevOps, CircleCI, Travis, etc.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/injaehwang/omnilens/main/ci/generic.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/injaehwang/houndlens/main/ci/generic.sh | bash
 #
 # Environment variables:
-#   OMNILENS_DIFF_BASE  - Git ref to compare against (default: auto-detect)
-#   OMNILENS_FAIL_ON    - Fail on: error, warning, never (default: error)
-#   OMNILENS_FORMAT     - Output format: text, json, sarif (default: text)
+#   HOUNDLENS_DIFF_BASE  - Git ref to compare against (default: auto-detect)
+#   HOUNDLENS_FAIL_ON    - Fail on: error, warning, never (default: error)
+#   HOUNDLENS_FORMAT     - Output format: text, json, sarif (default: text)
 
 set -euo pipefail
 
-DIFF_BASE="${OMNILENS_DIFF_BASE:-}"
-FAIL_ON="${OMNILENS_FAIL_ON:-error}"
-FORMAT="${OMNILENS_FORMAT:-text}"
+DIFF_BASE="${HOUNDLENS_DIFF_BASE:-}"
+FAIL_ON="${HOUNDLENS_FAIL_ON:-error}"
+FORMAT="${HOUNDLENS_FORMAT:-text}"
 
-echo "=== omnilens CI verification ==="
+echo "=== houndlens CI verification ==="
 
 # Install if not present.
-if ! command -v omnilens &> /dev/null; then
-    echo "Installing omnilens..."
-    cargo install omnilens 2>/dev/null || {
+if ! command -v houndlens &> /dev/null; then
+    echo "Installing houndlens..."
+    cargo install houndlens 2>/dev/null || {
         echo "cargo install failed, trying from source..."
-        git clone --depth 1 https://github.com/injaehwang/omnilens /tmp/omnilens
-        cargo install --path /tmp/omnilens
+        git clone --depth 1 https://github.com/injaehwang/houndlens /tmp/houndlens
+        cargo install --path /tmp/houndlens
     }
 fi
 
@@ -57,12 +57,12 @@ echo ""
 
 # Run verification.
 set +e
-omnilens --format "$FORMAT" verify --diff "$DIFF_BASE"
+houndlens --format "$FORMAT" verify --diff "$DIFF_BASE"
 EXIT_CODE=$?
 set -e
 
 # Also generate JSON report.
-omnilens --format json verify --diff "$DIFF_BASE" > omnilens-report.json 2>/dev/null || true
+houndlens --format json verify --diff "$DIFF_BASE" > houndlens-report.json 2>/dev/null || true
 
 # Determine exit.
 case "$FAIL_ON" in
@@ -70,7 +70,7 @@ case "$FAIL_ON" in
         exit 0
         ;;
     warning)
-        WARNINGS=$(jq -r '.summary.warnings // 0' omnilens-report.json 2>/dev/null || echo "0")
+        WARNINGS=$(jq -r '.summary.warnings // 0' houndlens-report.json 2>/dev/null || echo "0")
         if [ "$WARNINGS" -gt 0 ] || [ "$EXIT_CODE" -ne 0 ]; then
             echo ""
             echo "=== FAILED: $WARNINGS warnings found ==="
@@ -83,4 +83,4 @@ case "$FAIL_ON" in
 esac
 
 echo ""
-echo "=== omnilens verification complete ==="
+echo "=== houndlens verification complete ==="

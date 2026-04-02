@@ -1,8 +1,8 @@
-# omnilens Architecture
+# houndlens Architecture
 
 ## Overview
 
-omnilens is an **AI-native code verification engine**. It combines semantic code analysis, invariant discovery, behavioral contract inference, and property-based test synthesis to verify code — especially AI-generated code — at the speed it's produced.
+houndlens is an **AI-native code verification engine**. It combines semantic code analysis, invariant discovery, behavioral contract inference, and property-based test synthesis to verify code — especially AI-generated code — at the speed it's produced.
 
 Each layer is designed to be independently testable, incrementally buildable, and extensible via WASM plugins.
 
@@ -18,7 +18,7 @@ Each layer is designed to be independently testable, incrementally buildable, an
                                 │
                     ┌───────────▼───────────┐
                     │   Query Engine         │
-                    │   OmniQL Parser +      │
+                    │   HoundQL Parser +      │
                     │   Execution Engine     │
                     └───────────┬───────────┘
                                 │
@@ -154,7 +154,7 @@ pub trait LanguageFrontend: Send + Sync {
 
 **Responsibility**: Language-independent representation of code semantics.
 
-This is the **core innovation** of omnilens. USIR captures:
+This is the **core innovation** of houndlens. USIR captures:
 
 ```rust
 /// A node in the USIR graph
@@ -307,10 +307,10 @@ pub struct ImpactedNode {
 
 #### Pattern Matcher
 
-Executes OmniQL queries against the semantic graph:
+Executes HoundQL queries against the semantic graph:
 
 ```
-// OmniQL examples
+// HoundQL examples
 FIND functions WHERE calls(db.query) AND NOT handles(Error)
 FIND dataflow FROM tag(UserInput) TO tag(SqlQuery) WITHOUT sanitize()
 FIND functions WHERE complexity > 20 AND test_coverage < 0.5
@@ -340,12 +340,12 @@ pub enum TestStrategy {
 }
 ```
 
-### 7. Query Engine (OmniQL)
+### 7. Query Engine (HoundQL)
 
-**Responsibility**: Parse and execute OmniQL queries.
+**Responsibility**: Parse and execute HoundQL queries.
 
 ```
-OmniQL Grammar (simplified):
+HoundQL Grammar (simplified):
 
 query     := FIND target WHERE condition (AND condition)*
 target    := "functions" | "types" | "modules" | "dataflow" | "apis"
@@ -356,7 +356,7 @@ predicate := "calls" | "handles" | "implements" | "imports" | "tag"
 operator  := ">" | "<" | "=" | "!=" | "~" (regex match)
 ```
 
-OmniQL compiles to a graph traversal plan (similar to a SQL query planner):
+HoundQL compiles to a graph traversal plan (similar to a SQL query planner):
 
 ```rust
 pub struct QueryPlan {
@@ -395,13 +395,13 @@ pub struct RuntimeOverlay {
 #### CLI
 
 ```
-omnilens <COMMAND>
+houndlens <COMMAND>
 
 Commands:
-  init        Initialize omnilens in current project
+  init        Initialize houndlens in current project
   index       Build/update the semantic index
   impact      Analyze impact of a change
-  query       Run an OmniQL query
+  query       Run an HoundQL query
   trace       Attach runtime profiler
   testgen     Generate tests for uncovered paths
   graph       Export semantic graph (DOT, JSON, interactive HTML)
@@ -419,11 +419,11 @@ Global Options:
 Standard LSP + custom methods:
 
 ```
-omnilens/impact        → Impact analysis for symbol at cursor
-omnilens/query         → OmniQL query execution
-omnilens/graph         → Subgraph around cursor position
-omnilens/testgen       → Generate tests for function at cursor
-omnilens/runtimeData   → Runtime overlay for current file
+houndlens/impact        → Impact analysis for symbol at cursor
+houndlens/query         → HoundQL query execution
+houndlens/graph         → Subgraph around cursor position
+houndlens/testgen       → Generate tests for function at cursor
+houndlens/runtimeData   → Runtime overlay for current file
 ```
 
 ## Data Flow
@@ -458,7 +458,7 @@ File Change Detected
 User Query (CLI/LSP/API)
         │
         ▼
-  OmniQL Parse → AST
+  HoundQL Parse → AST
         │
         ▼
   Query Plan Optimization
@@ -482,14 +482,14 @@ User Query (CLI/LSP/API)
 
 ```rust
 /// Plugins implement this interface (compiled to WASM)
-pub trait OmnilensPlugin {
+pub trait HoundlensPlugin {
     /// Plugin metadata
     fn manifest(&self) -> PluginManifest;
 
     /// Custom analysis pass over USIR nodes
     fn analyze(&self, graph: &ReadOnlyGraph) -> Vec<Diagnostic>;
 
-    /// Custom OmniQL predicates
+    /// Custom HoundQL predicates
     fn predicates(&self) -> Vec<PredicateDefinition>;
 
     /// Custom output formatters
@@ -504,6 +504,6 @@ pub trait OmnilensPlugin {
 | Initial index (100K LOC) | < 5s | Parallel parsing, rayon |
 | Incremental update (1 file) | < 100ms | Content-hash diffing |
 | Impact query (depth=5) | < 200ms | BFS with early termination |
-| OmniQL simple query | < 500ms | Index-first scan strategy |
+| HoundQL simple query | < 500ms | Index-first scan strategy |
 | Memory (100K LOC project) | < 500MB | Arena allocation, mmap |
 | Memory (1M LOC project) | < 2GB | Lazy loading, LRU eviction |

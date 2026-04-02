@@ -1,12 +1,12 @@
-# omnilens — Copilot Instructions
+# houndlens — Copilot Instructions
 
-This is omnilens, an AI-native code verification engine in Rust.
+This is houndlens, an AI-native code verification engine in Rust.
 
 ## Project basics
 - 14-crate Cargo workspace
 - 3 language frontends: Rust, TypeScript, Python (tree-sitter based)
-- Key command: `omnilens verify --diff HEAD~1` (semantic diff)
-- Query language: `omnilens query "FIND functions WHERE complexity > 10"`
+- Key command: `houndlens verify --diff HEAD~1` (semantic diff)
+- Query language: `houndlens query "FIND functions WHERE complexity > 10"`
 
 ## When generating code for this project
 
@@ -17,11 +17,11 @@ This is omnilens, an AI-native code verification engine in Rust.
 - Placeholder nodes: `complexity: None`, resolved by `linker.rs`
 
 ### New language frontend
-1. Implement `LanguageFrontend` trait from `omnilens-core/src/frontend.rs`
+1. Implement `LanguageFrontend` trait from `houndlens-core/src/frontend.rs`
 2. Use tree-sitter for parsing, convert to `UsirNode`/`UsirEdge`
-3. Register in `omnilens-cli/src/commands/mod.rs`
+3. Register in `houndlens-cli/src/commands/mod.rs`
 
-### OmniQL queries
+### HoundQL queries
 Syntax: `FIND <target> WHERE <conditions>`
 - Targets: functions, types, modules, bindings, all
 - Comparisons: name, visibility, complexity, params, fields, async, unsafe, file, kind

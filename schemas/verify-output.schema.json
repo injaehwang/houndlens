@@ -1,14 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://omnilens.dev/schemas/verify-output.json",
-  "title": "omnilens verify output",
-  "description": "JSON output from `omnilens --format json verify`",
+  "$id": "https://houndlens.dev/schemas/verify-output.json",
+  "title": "houndlens verify output",
+  "description": "JSON output from `houndlens --format json verify`",
   "type": "object",
   "required": ["version", "status", "risk_score", "confidence", "summary", "semantic_changes", "invariant_warnings", "suggested_tests"],
   "properties": {
     "version": {
       "type": "string",
-      "description": "omnilens version"
+      "description": "houndlens version"
     },
     "status": {
       "type": "string",

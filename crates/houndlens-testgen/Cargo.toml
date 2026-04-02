@@ -1,0 +1,12 @@
+[package]
+name = "houndlens-testgen"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "AI-native test synthesis — property-based, boundary, and contract tests"
+
+[dependencies]
+houndlens-ir = { workspace = true }
+houndlens-graph = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }

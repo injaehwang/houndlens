@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 
 /**
- * omnilens MCP Server
+ * houndlens MCP Server
  *
- * Exposes omnilens CLI as MCP tools for AI agents.
+ * Exposes houndlens CLI as MCP tools for AI agents.
  * Tools: verify, impact, query, invariants, index
  *
  * Usage:
- *   npx @omnilens/mcp-server
+ *   npx @houndlens/mcp-server
  *
  * Configure in Claude Desktop / claude_desktop_config.json:
  *   {
  *     "mcpServers": {
- *       "omnilens": {
+ *       "houndlens": {
  *         "command": "npx",
- *         "args": ["@omnilens/mcp-server"]
+ *         "args": ["@houndlens/mcp-server"]
  *       }
  *     }
  *   }
@@ -27,7 +27,7 @@ import { createInterface } from "readline";
 
 const TOOLS = [
   {
-    name: "omnilens_verify",
+    name: "houndlens_verify",
     description:
       "Verify code changes semantically. Detects function additions/removals, signature changes, complexity changes, visibility changes, invariant violations, and generates test suggestions. Returns JSON with risk score, semantic changes, and actionable recommendations.",
     inputSchema: {
@@ -53,7 +53,7 @@ const TOOLS = [
     },
   },
   {
-    name: "omnilens_impact",
+    name: "houndlens_impact",
     description:
       "Analyze the impact of changing a specific function. Shows who calls this function (reverse impact) and what it calls (forward impact), with depth-limited graph traversal.",
     inputSchema: {
@@ -81,16 +81,16 @@ const TOOLS = [
     },
   },
   {
-    name: "omnilens_query",
+    name: "houndlens_query",
     description:
-      'Run an OmniQL query to search the codebase semantically. Query language supports: FIND functions/types/modules WHERE conditions. Example: "FIND functions WHERE complexity > 15", "FIND types WHERE fields > 5", "FIND functions WHERE calls(db.query) AND visibility = public".',
+      'Run an HoundQL query to search the codebase semantically. Query language supports: FIND functions/types/modules WHERE conditions. Example: "FIND functions WHERE complexity > 15", "FIND types WHERE fields > 5", "FIND functions WHERE calls(db.query) AND visibility = public".',
     inputSchema: {
       type: "object",
       properties: {
         query: {
           type: "string",
           description:
-            'OmniQL query string. Syntax: FIND <target> WHERE <conditions>. Targets: functions, types, modules, bindings, all. Operators: =, !=, >, <, >=, <=, ~ (glob). Predicates: calls(x), returns(x), implements(x), has_field(x). Logic: AND, NOT.',
+            'HoundQL query string. Syntax: FIND <target> WHERE <conditions>. Targets: functions, types, modules, bindings, all. Operators: =, !=, >, <, >=, <=, ~ (glob). Predicates: calls(x), returns(x), implements(x), has_field(x). Logic: AND, NOT.',
         },
         cwd: {
           type: "string",
@@ -101,7 +101,7 @@ const TOOLS = [
     },
   },
   {
-    name: "omnilens_invariants",
+    name: "houndlens_invariants",
     description:
       "Auto-discover codebase invariants — patterns that are always followed in the code. Detects: naming conventions, error handling patterns, call ordering rules, type usage constraints. Useful for understanding codebase rules before making changes.",
     inputSchema: {
@@ -115,7 +115,7 @@ const TOOLS = [
     },
   },
   {
-    name: "omnilens_index",
+    name: "houndlens_index",
     description:
       "Build or update the semantic index for a project. Parses all Rust, TypeScript, and Python files, builds a cross-file semantic graph. Must be run before other commands if the project hasn't been indexed yet.",
     inputSchema: {
@@ -130,9 +130,9 @@ const TOOLS = [
   },
 ];
 
-function runOmnilens(args, cwd) {
+function runHoundlens(args, cwd) {
   try {
-    const result = execSync(`omnilens ${args}`, {
+    const result = execSync(`houndlens ${args}`, {
       cwd: cwd || process.cwd(),
       encoding: "utf-8",
       timeout: 60000,
@@ -140,9 +140,9 @@ function runOmnilens(args, cwd) {
     });
     return result;
   } catch (err) {
-    // omnilens may exit with code 1 for verification failures — still valid output.
+    // houndlens may exit with code 1 for verification failures — still valid output.
     if (err.stdout) return err.stdout;
-    throw new Error(`omnilens failed: ${err.stderr || err.message}`);
+    throw new Error(`houndlens failed: ${err.stderr || err.message}`);
   }
 }
 
@@ -150,13 +150,13 @@ function handleToolCall(name, args) {
   const cwd = args.cwd || process.cwd();
 
   switch (name) {
-    case "omnilens_verify": {
+    case "houndlens_verify": {
       let cmd = "--format json verify";
       if (args.diff) cmd += ` --diff "${args.diff}"`;
       if (args.files) {
         for (const f of args.files) cmd += ` --files "${f}"`;
       }
-      const output = runOmnilens(cmd, cwd);
+      const output = runHoundlens(cmd, cwd);
       try {
         const json = JSON.parse(output);
         return {
@@ -172,26 +172,26 @@ function handleToolCall(name, args) {
       }
     }
 
-    case "omnilens_impact": {
+    case "houndlens_impact": {
       let cmd = `impact "${args.file}"`;
       if (args.function) cmd += ` --fn "${args.function}"`;
       if (args.depth) cmd += ` --depth ${args.depth}`;
-      const output = runOmnilens(cmd, cwd);
+      const output = runHoundlens(cmd, cwd);
       return { content: [{ type: "text", text: output }] };
     }
 
-    case "omnilens_query": {
-      const output = runOmnilens(`query "${args.query}"`, cwd);
+    case "houndlens_query": {
+      const output = runHoundlens(`query "${args.query}"`, cwd);
       return { content: [{ type: "text", text: output }] };
     }
 
-    case "omnilens_invariants": {
-      const output = runOmnilens("invariants", cwd);
+    case "houndlens_invariants": {
+      const output = runHoundlens("invariants", cwd);
       return { content: [{ type: "text", text: output }] };
     }
 
-    case "omnilens_index": {
-      const output = runOmnilens("index", cwd);
+    case "houndlens_index": {
+      const output = runHoundlens("index", cwd);
       return { content: [{ type: "text", text: output }] };
     }
 
@@ -232,7 +232,7 @@ function handleMessage(msg) {
           protocolVersion: "2024-11-05",
           capabilities: { tools: {} },
           serverInfo: {
-            name: "omnilens",
+            name: "houndlens",
             version: "0.1.0",
           },
         },
@@ -270,4 +270,4 @@ function handleMessage(msg) {
   }
 }
 
-process.stderr.write("omnilens MCP server started\n");
+process.stderr.write("houndlens MCP server started\n");

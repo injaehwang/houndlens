@@ -1,4 +1,4 @@
-"""omnilens Python client — wraps the CLI for use in any Python AI framework."""
+"""houndlens Python client — wraps the CLI for use in any Python AI framework."""
 
 import json
 import subprocess
@@ -95,15 +95,15 @@ class Invariant:
     evidence_count: int
 
 
-class Omnilens:
-    """Python interface to the omnilens CLI.
+class Houndlens:
+    """Python interface to the houndlens CLI.
 
     Args:
         cwd: Project root directory. Defaults to current directory.
-        binary: Path to omnilens binary. Defaults to "omnilens" (from PATH).
+        binary: Path to houndlens binary. Defaults to "houndlens" (from PATH).
     """
 
-    def __init__(self, cwd: Optional[str] = None, binary: str = "omnilens"):
+    def __init__(self, cwd: Optional[str] = None, binary: str = "houndlens"):
         self.cwd = cwd or str(Path.cwd())
         self.binary = binary
         self._indexed = False
@@ -122,10 +122,10 @@ class Omnilens:
             timeout=120,
         )
 
-        # omnilens exits 1 for verification failures — still valid output.
+        # houndlens exits 1 for verification failures — still valid output.
         if result.returncode not in (0, 1):
             raise RuntimeError(
-                f"omnilens failed (exit {result.returncode}): {result.stderr}"
+                f"houndlens failed (exit {result.returncode}): {result.stderr}"
             )
 
         return result.stdout
@@ -217,10 +217,10 @@ class Omnilens:
         return ImpactResult(target=function or file, raw_text=output)
 
     def query(self, query_str: str) -> QueryResult:
-        """Run an OmniQL query.
+        """Run an HoundQL query.
 
         Args:
-            query_str: OmniQL query (e.g., "FIND functions WHERE complexity > 10")
+            query_str: HoundQL query (e.g., "FIND functions WHERE complexity > 10")
         """
         self._ensure_indexed()
 
@@ -283,10 +283,10 @@ class Omnilens:
 # ─── LangChain / LlamaIndex tool definitions ────────────────────
 
 def as_langchain_tools(cwd: Optional[str] = None):
-    """Create LangChain-compatible tools for omnilens.
+    """Create LangChain-compatible tools for houndlens.
 
     Usage:
-        from omnilens import as_langchain_tools
+        from houndlens import as_langchain_tools
         tools = as_langchain_tools("/path/to/project")
         # Add to your LangChain agent
     """
@@ -295,17 +295,17 @@ def as_langchain_tools(cwd: Optional[str] = None):
     except ImportError:
         raise ImportError("Install langchain-core: pip install langchain-core")
 
-    lens = Omnilens(cwd)
+    lens = Houndlens(cwd)
 
     @tool
-    def omnilens_verify(diff: str = "HEAD~1") -> str:
+    def houndlens_verify(diff: str = "HEAD~1") -> str:
         """Verify code changes semantically. Detects breaking changes, signature modifications, and invariant violations. Returns risk score and actionable recommendations."""
         result = lens.verify(diff=diff)
         return json.dumps(result.raw, indent=2)
 
     @tool
-    def omnilens_query(query: str) -> str:
-        """Search codebase using OmniQL. Example: 'FIND functions WHERE complexity > 10'. Supports: functions, types, modules. Operators: =, !=, >, <, ~. Predicates: calls(), returns(), implements()."""
+    def houndlens_query(query: str) -> str:
+        """Search codebase using HoundQL. Example: 'FIND functions WHERE complexity > 10'. Supports: functions, types, modules. Operators: =, !=, >, <, ~. Predicates: calls(), returns(), implements()."""
         result = lens.query(query)
         return f"Found {len(result.matches)} matches:\n" + "\n".join(
             f"  {m.name} ({m.file}:{m.line}) — {m.description}"
@@ -313,25 +313,25 @@ def as_langchain_tools(cwd: Optional[str] = None):
         )
 
     @tool
-    def omnilens_impact(file: str, function: str = "") -> str:
+    def houndlens_impact(file: str, function: str = "") -> str:
         """Analyze impact of changing a function. Shows callers and callees."""
         result = lens.impact(file, function=function or None)
         return result.raw_text
 
     @tool
-    def omnilens_invariants() -> str:
+    def houndlens_invariants() -> str:
         """Discover codebase invariants — patterns always followed in the code."""
         invs = lens.invariants()
         return "\n".join(i.description for i in invs)
 
-    return [omnilens_verify, omnilens_query, omnilens_impact, omnilens_invariants]
+    return [houndlens_verify, houndlens_query, houndlens_impact, houndlens_invariants]
 
 
 def as_openai_tools():
     """Return OpenAI function-calling tool definitions.
 
     Usage:
-        from omnilens import as_openai_tools
+        from houndlens import as_openai_tools
         tools = as_openai_tools()
         # Pass to OpenAI chat completions as tools=tools
     """
@@ -339,7 +339,7 @@ def as_openai_tools():
         {
             "type": "function",
             "function": {
-                "name": "omnilens_verify",
+                "name": "houndlens_verify",
                 "description": "Verify code changes semantically. Detects breaking changes, signature modifications, complexity changes, and invariant violations. Returns risk score and recommendations.",
                 "parameters": {
                     "type": "object",
@@ -360,14 +360,14 @@ def as_openai_tools():
         {
             "type": "function",
             "function": {
-                "name": "omnilens_query",
-                "description": "Search codebase using OmniQL. Syntax: FIND <target> WHERE <conditions>. Targets: functions, types, modules. Fields: complexity, visibility, params, async, name. Operators: = != > < ~ AND NOT. Predicates: calls(x), returns(x), implements(x).",
+                "name": "houndlens_query",
+                "description": "Search codebase using HoundQL. Syntax: FIND <target> WHERE <conditions>. Targets: functions, types, modules. Fields: complexity, visibility, params, async, name. Operators: = != > < ~ AND NOT. Predicates: calls(x), returns(x), implements(x).",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "OmniQL query string",
+                            "description": "HoundQL query string",
                         }
                     },
                     "required": ["query"],
@@ -377,7 +377,7 @@ def as_openai_tools():
         {
             "type": "function",
             "function": {
-                "name": "omnilens_impact",
+                "name": "houndlens_impact",
                 "description": "Analyze the blast radius of changing a function. Shows all callers and callees.",
                 "parameters": {
                     "type": "object",
@@ -400,7 +400,7 @@ def as_openai_tools():
         {
             "type": "function",
             "function": {
-                "name": "omnilens_invariants",
+                "name": "houndlens_invariants",
                 "description": "Discover codebase invariants: naming conventions, error handling patterns, call ordering rules, type usage constraints.",
                 "parameters": {"type": "object", "properties": {}},
             },

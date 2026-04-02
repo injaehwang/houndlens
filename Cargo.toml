@@ -1,47 +1,47 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/omnilens-cli",
-    "crates/omnilens-core",
-    "crates/omnilens-ir",
-    "crates/omnilens-graph",
-    "crates/omnilens-index",
-    "crates/omnilens-storage",
-    "crates/omnilens-query",
-    "crates/omnilens-frontend-rust",
-    "crates/omnilens-frontend-typescript",
-    "crates/omnilens-frontend-python",
-    "crates/omnilens-lsp",
-    "crates/omnilens-runtime",
-    "crates/omnilens-testgen",
-    "crates/omnilens-plugin",
+    "crates/houndlens-cli",
+    "crates/houndlens-core",
+    "crates/houndlens-ir",
+    "crates/houndlens-graph",
+    "crates/houndlens-index",
+    "crates/houndlens-storage",
+    "crates/houndlens-query",
+    "crates/houndlens-frontend-rust",
+    "crates/houndlens-frontend-typescript",
+    "crates/houndlens-frontend-python",
+    "crates/houndlens-lsp",
+    "crates/houndlens-runtime",
+    "crates/houndlens-testgen",
+    "crates/houndlens-plugin",
 ]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
-repository = "https://github.com/injaehwang/omnilens"
+repository = "https://github.com/injaehwang/houndlens"
 description = "Universal Codebase Intelligence Engine"
 rust-version = "1.85"
 
 [workspace.dependencies]
 # Core
-omnilens-core = { path = "crates/omnilens-core" }
-omnilens-ir = { path = "crates/omnilens-ir" }
-omnilens-graph = { path = "crates/omnilens-graph" }
-omnilens-index = { path = "crates/omnilens-index" }
-omnilens-storage = { path = "crates/omnilens-storage" }
-omnilens-query = { path = "crates/omnilens-query" }
-omnilens-lsp = { path = "crates/omnilens-lsp" }
-omnilens-runtime = { path = "crates/omnilens-runtime" }
-omnilens-testgen = { path = "crates/omnilens-testgen" }
-omnilens-plugin = { path = "crates/omnilens-plugin" }
+houndlens-core = { path = "crates/houndlens-core" }
+houndlens-ir = { path = "crates/houndlens-ir" }
+houndlens-graph = { path = "crates/houndlens-graph" }
+houndlens-index = { path = "crates/houndlens-index" }
+houndlens-storage = { path = "crates/houndlens-storage" }
+houndlens-query = { path = "crates/houndlens-query" }
+houndlens-lsp = { path = "crates/houndlens-lsp" }
+houndlens-runtime = { path = "crates/houndlens-runtime" }
+houndlens-testgen = { path = "crates/houndlens-testgen" }
+houndlens-plugin = { path = "crates/houndlens-plugin" }
 
 # Language frontends
-omnilens-frontend-rust = { path = "crates/omnilens-frontend-rust" }
-omnilens-frontend-typescript = { path = "crates/omnilens-frontend-typescript" }
-omnilens-frontend-python = { path = "crates/omnilens-frontend-python" }
+houndlens-frontend-rust = { path = "crates/houndlens-frontend-rust" }
+houndlens-frontend-typescript = { path = "crates/houndlens-frontend-typescript" }
+houndlens-frontend-python = { path = "crates/houndlens-frontend-python" }
 
 # External dependencies
 tree-sitter = "0.24"

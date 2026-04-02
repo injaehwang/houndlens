@@ -1,8 +1,8 @@
-# omnilens Roadmap
+# houndlens Roadmap
 
 ## Phase 1 — MVP (Month 1-3)
 
-**Goal**: `omnilens impact` working for Rust/TS/Python, demo-ready for launch.
+**Goal**: `houndlens impact` working for Rust/TS/Python, demo-ready for launch.
 
 ### Milestones
 
@@ -11,33 +11,33 @@
 - [ ] **M1.3** USIR v0.1 — functions, calls, imports (no data flow yet)
 - [ ] **M1.4** Semantic graph with basic forward/reverse impact traversal
 - [ ] **M1.5** Content-addressed storage + incremental indexing
-- [ ] **M1.6** CLI: `omnilens init`, `omnilens index`, `omnilens impact`
+- [ ] **M1.6** CLI: `houndlens init`, `houndlens index`, `houndlens impact`
 - [ ] **M1.7** Output formats: terminal (colored), JSON, SARIF
 - [ ] **M1.8** Launch: HN post, Reddit r/rust + r/programming, Twitter/X
 
 ### Deliverables
-- Single binary, `cargo install omnilens`
+- Single binary, `cargo install houndlens`
 - Works on any Rust/TS/Python project with zero configuration
-- `omnilens impact <file> --fn <name>` returns direct + transitive callers
+- `houndlens impact <file> --fn <name>` returns direct + transitive callers
 
 ---
 
 ## Phase 2 — Core Intelligence (Month 4-6)
 
-**Goal**: OmniQL, data flow analysis, 5+ language support.
+**Goal**: HoundQL, data flow analysis, 5+ language support.
 
 ### Milestones
 
-- [ ] **M2.1** OmniQL parser + execution engine
+- [ ] **M2.1** HoundQL parser + execution engine
 - [ ] **M2.2** Data flow analysis (taint tracking: UserInput → DB → Response)
 - [ ] **M2.3** Go + Java frontends
 - [ ] **M2.4** Type resolution across modules (best-effort for dynamic languages)
 - [ ] **M2.5** API endpoint detection (HTTP routes, gRPC, GraphQL)
-- [ ] **M2.6** LSP server: `omnilens serve`
+- [ ] **M2.6** LSP server: `houndlens serve`
 - [ ] **M2.7** VS Code extension (basic: impact on hover, query palette)
 
 ### Deliverables
-- `omnilens query "..."` works across all supported languages
+- `houndlens query "..."` works across all supported languages
 - Security-focused queries (injection, XSS, SSRF patterns)
 - VS Code extension on marketplace
 
@@ -57,8 +57,8 @@
 - [ ] **M3.6** WASM plugin system v1
 
 ### Deliverables
-- `omnilens trace --attach <pid>` with live analysis
-- `omnilens testgen` generates runnable tests
+- `houndlens trace --attach <pid>` with live analysis
+- `houndlens testgen` generates runnable tests
 - Plugin API for community extensions
 
 ---
@@ -72,13 +72,13 @@
 - [ ] **M4.1** Cross-repository dependency graph
 - [ ] **M4.2** Breaking change detection across repos
 - [ ] **M4.3** CI/CD integration (GitHub Actions, GitLab CI)
-- [ ] **M4.4** `omnilens-cloud` — Go-based API server + dashboard
+- [ ] **M4.4** `houndlens-cloud` — Go-based API server + dashboard
 - [ ] **M4.5** Team collaboration: shared analysis, PR impact reviews
 - [ ] **M4.6** C/C++ frontend
 - [ ] **M4.7** JetBrains plugin
 
 ### Deliverables
-- `omnilens xrepo` for organization-wide analysis
+- `houndlens xrepo` for organization-wide analysis
 - GitHub Action: auto-comment PR impact analysis
 - Web dashboard for team-wide code intelligence
 

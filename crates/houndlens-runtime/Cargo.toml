@@ -1,0 +1,12 @@
+[package]
+name = "houndlens-runtime"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Runtime profiler — eBPF/ETW/DTrace based tracing with semantic overlay"
+
+[dependencies]
+houndlens-ir = { workspace = true }
+houndlens-graph = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }

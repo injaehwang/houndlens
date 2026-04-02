@@ -1,18 +1,18 @@
 openapi: 3.1.0
 info:
-  title: omnilens API
+  title: houndlens API
   version: 0.1.0
   description: |
     AI-native code verification engine. Semantic analysis across Rust, TypeScript, and Python.
 
     Use this API from any AI agent, LLM tool, or automation system.
-    Start the server: `omnilens serve --api --port 7700`
+    Start the server: `houndlens serve --api --port 7700`
   license:
     name: Apache-2.0 OR MIT
 
 servers:
   - url: http://localhost:7700
-    description: Local omnilens server
+    description: Local houndlens server
 
 paths:
   /verify:
@@ -90,9 +90,9 @@ paths:
   /query:
     post:
       operationId: query
-      summary: Run an OmniQL semantic query
+      summary: Run an HoundQL semantic query
       description: |
-        Search the codebase using OmniQL.
+        Search the codebase using HoundQL.
         Syntax: FIND <target> WHERE <conditions>
         Targets: functions, types, modules, bindings, all
         Example: "FIND functions WHERE complexity > 15 AND visibility = public"
@@ -106,7 +106,7 @@ paths:
               properties:
                 query:
                   type: string
-                  description: "OmniQL query string"
+                  description: "HoundQL query string"
                   example: "FIND functions WHERE complexity > 10"
                 cwd:
                   type: string

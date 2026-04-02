@@ -1,0 +1,26 @@
+[package]
+name = "houndlens"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Universal AI-native code verification engine"
+
+[[bin]]
+name = "houndlens"
+path = "src/main.rs"
+
+[dependencies]
+houndlens-core = { workspace = true }
+houndlens-ir = { workspace = true }
+houndlens-graph = { workspace = true }
+houndlens-query = { workspace = true }
+houndlens-frontend-rust = { workspace = true }
+houndlens-frontend-typescript = { workspace = true }
+houndlens-frontend-python = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+colored = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+ignore = { workspace = true }

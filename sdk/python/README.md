@@ -1,23 +1,23 @@
-# omnilens Python SDK
+# houndlens Python SDK
 
-Python interface for the omnilens code verification engine.
+Python interface for the houndlens code verification engine.
 
 ## Install
 
 ```bash
-pip install omnilens
+pip install houndlens
 ```
 
-**Prerequisite**: omnilens CLI must be installed (`cargo install omnilens`).
+**Prerequisite**: houndlens CLI must be installed (`cargo install houndlens`).
 
 ## Usage
 
 ### Direct API
 
 ```python
-from omnilens import Omnilens
+from houndlens import Houndlens
 
-lens = Omnilens("/path/to/project")
+lens = Houndlens("/path/to/project")
 
 # Verify changes
 result = lens.verify(diff="HEAD~1")
@@ -42,7 +42,7 @@ for inv in lens.invariants():
 ### LangChain
 
 ```python
-from omnilens import as_langchain_tools
+from houndlens import as_langchain_tools
 
 tools = as_langchain_tools("/path/to/project")
 # Add tools to your LangChain agent
@@ -51,7 +51,7 @@ tools = as_langchain_tools("/path/to/project")
 ### OpenAI Function Calling
 
 ```python
-from omnilens import as_openai_tools
+from houndlens import as_openai_tools
 
 tools = as_openai_tools()
 # Pass to: client.chat.completions.create(tools=tools, ...)

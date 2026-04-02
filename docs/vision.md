@@ -1,4 +1,4 @@
-# omnilens — Vision
+# houndlens — Vision
 
 ## The Problem: AI Generates Code Faster Than Humans Can Verify
 
@@ -37,9 +37,9 @@ AI-generated bugs are **systemic** and harder to catch:
 
 **No existing tool catches these systematically.**
 
-## The Solution: omnilens — AI-Native Code Verification Engine
+## The Solution: houndlens — AI-Native Code Verification Engine
 
-omnilens is not a testing *framework*. It's a **verification engine** designed for the AI-augmented development workflow.
+houndlens is not a testing *framework*. It's a **verification engine** designed for the AI-augmented development workflow.
 
 ### Core Thesis
 
@@ -47,7 +47,7 @@ omnilens is not a testing *framework*. It's a **verification engine** designed f
 
 ### What "AI-Native Testing" Means
 
-| Traditional Testing | omnilens (AI-Native) |
+| Traditional Testing | houndlens (AI-Native) |
 |---------------------|----------------------|
 | Human writes test cases | Engine **generates** verification automatically |
 | Tests check known behaviors | Engine discovers **unknown behaviors** |
@@ -64,7 +64,7 @@ omnilens is not a testing *framework*. It's a **verification engine** designed f
 Not "what lines changed" but "what behaviors changed."
 
 ```bash
-$ omnilens verify --diff HEAD~1
+$ houndlens verify --diff HEAD~1
 
 Semantic Changes Detected:
   ✗ auth/login.rs: Return type changed from Result<Token> to Option<Token>
@@ -82,7 +82,7 @@ Semantic Changes Detected:
 Automatically discover what's **always true** in the codebase, then verify AI-generated code doesn't violate it.
 
 ```bash
-$ omnilens invariants
+$ houndlens invariants
 
 Discovered Invariants:
   INV-001: All DB queries go through connection pool (never direct connect)
@@ -90,7 +90,7 @@ Discovered Invariants:
   INV-003: All API endpoints require authentication middleware
   INV-004: Monetary values use Decimal, never f64
 
-$ omnilens verify src/ai-generated-payment.rs
+$ houndlens verify src/ai-generated-payment.rs
 
   ✗ VIOLATION INV-004: Line 23 uses f64 for `total_amount`
     → AI-generated code used f64 instead of Decimal
@@ -102,7 +102,7 @@ $ omnilens verify src/ai-generated-payment.rs
 Verify that AI-generated code honors the **implicit contracts** of the codebase.
 
 ```bash
-$ omnilens contracts src/auth/
+$ houndlens contracts src/auth/
 
 Inferred Contracts:
   fn verify_token(token: &str) -> Result<Claims>
@@ -112,7 +112,7 @@ Inferred Contracts:
     POST: Err(_) → no side effects (pure function)
     INVARIANT: called before any protected resource access
 
-$ omnilens verify src/ai-generated-middleware.rs
+$ houndlens verify src/ai-generated-middleware.rs
 
   ✗ CONTRACT VIOLATION: verify_token() called AFTER resource access on line 45
     → AI placed auth check after database query (should be before)
@@ -123,7 +123,7 @@ Real-time verification as AI generates code, not after.
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│ AI generates │────▶│ omnilens     │────▶│ Feedback to  │
+│ AI generates │────▶│ houndlens     │────▶│ Feedback to  │
 │ code chunk   │     │ verifies     │     │ AI / Human   │
 └─────────────┘     │ in real-time │     └─────────────┘
                     └──────────────┘
@@ -145,7 +145,7 @@ Integration points:
 Generate tests that verify **properties**, not examples.
 
 ```bash
-$ omnilens testgen src/cart.rs --mode property
+$ houndlens testgen src/cart.rs --mode property
 
 Generated Property Tests:
   prop_cart_total_is_sum_of_items:
@@ -187,20 +187,20 @@ Generated Property Tests:
 | **AI review** (CodeRabbit) | LLM-based review | Formal verification, runtime awareness |
 | **Fuzzing** (AFL, cargo-fuzz) | Input mutation testing | Semantic targeting, property synthesis |
 | **Formal verification** (Dafny, KLEE) | Mathematical proofs | Practical for real codebases, multi-language |
-| **omnilens** | **All of the above, unified** | — |
+| **houndlens** | **All of the above, unified** | — |
 
 ## Success Metrics
 
-- **Time to verify**: AI generates a 500-line PR → omnilens verifies in < 30 seconds
+- **Time to verify**: AI generates a 500-line PR → houndlens verifies in < 30 seconds
 - **Bug detection rate**: Catch > 80% of AI-specific bug patterns before merge
 - **False positive rate**: < 5% (unusable if noisy)
 - **Language coverage**: Top 5 languages from day one
-- **Zero config**: Works on any project with `omnilens init`
+- **Zero config**: Works on any project with `houndlens init`
 
 ## Why This Wins GitHub Stars
 
 1. **Perfect timing**: Every developer is using AI coding tools NOW
 2. **Universal pain**: Everyone worries about AI code quality but has no systematic solution
-3. **"Holy shit" demo**: `omnilens verify --diff HEAD~1` on an AI-generated PR → instant, deep analysis
+3. **"Holy shit" demo**: `houndlens verify --diff HEAD~1` on an AI-generated PR → instant, deep analysis
 4. **Technical moat**: Combining formal methods + semantic analysis + runtime data is genuinely hard
 5. **Daily use tool**: Not a one-time setup — used on every PR, every commit, every AI interaction
