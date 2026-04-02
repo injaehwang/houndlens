@@ -52,23 +52,29 @@ Just tell it what you need. houndlens works behind the scenes.
 houndlens is an **AI harness** — it wraps your AI's coding workflow with automated analysis and verification.
 
 ```
-You say "houndlens" in AI chat
+Developer: "let's start houndlens"
         ↓
-AI reads .houndlens/summary.json (3KB, not the full snapshot)
-AI understands your entire project: files, functions, dependencies, health
+   AI ← reads .houndlens/summary.json (3KB)
+   AI: "Project analyzed. What do you need?"
         ↓
-You tell AI what to do
+Developer: "Fix the login function"
         ↓
-AI modifies code
+   AI → modifies auth.ts
+   AI → runs: houndlens (rescan, 10ms)
+   AI ← reads .houndlens/changes.json
+        "login signature changed → handleLogin affected"
+   AI → modifies api.ts (fixes handleLogin)
+   AI → runs: houndlens verify --diff HEAD
+   AI ← reads result: 0 errors
+   AI: "Done. Fixed auth.ts and api.ts."
         ↓
-houndlens harness kicks in:
-  · Git pre-commit hook blocks broken code (all AI tools)
-  · Claude Code hook sends verify results to AI's context
-  · AI reads .houndlens/changes.json to see what it broke
-  · AI fixes issues automatically
+Developer: git commit
         ↓
-Clean code committed
+   houndlens pre-commit hook → verify → pass → committed
 ```
+
+AI and houndlens work in a loop: AI modifies → houndlens checks → AI reads result → AI fixes → repeat until clean.
+
 
 ### What houndlens generates
 
@@ -90,9 +96,9 @@ CLAUDE.md              One-line pointer for Claude
 
 | Layer | Scope | How |
 |-------|-------|-----|
-| **Instructions** | All AI tools | AI reads rules from summary.json |
-| **Claude hooks** | Claude Code | Verify results injected into AI context after every edit |
-| **Git hook** | All AI tools | Pre-commit blocks broken code — nothing escapes |
+| **AI instructions** | All AI tools | summary.json tells AI to run `houndlens` and read `changes.json` after modifications |
+| **Claude Code hooks** | Claude Code only | PostToolUse hook auto-runs verify and sends results to AI's conversation context |
+| **Git pre-commit hook** | All AI tools | Blocks commit if breaking changes exist — last line of defense |
 
 ### Token efficiency
 
