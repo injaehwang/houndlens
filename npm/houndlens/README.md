@@ -32,9 +32,9 @@ houndlens parses every file, builds a call graph, and outputs a lightweight summ
 
 AI reads these instead of opening files one by one.
 
-### 2. Unified verification
+### 2. AI runs all checks for you
 
-`houndlens verify` runs your project's own tools on changed files and combines the results:
+When AI modifies code, it runs `houndlens verify` which executes your project's own tools on changed files:
 
 ```
 houndlens verify --diff HEAD
