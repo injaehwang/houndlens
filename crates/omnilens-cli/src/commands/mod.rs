@@ -17,7 +17,6 @@ pub mod query;
 pub mod testgen;
 pub mod trace;
 pub mod graph;
-pub mod serve;
 pub mod invariants;
 
 use omnilens_core::Engine;

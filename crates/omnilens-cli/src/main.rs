@@ -69,8 +69,6 @@ enum Command {
     Status,
     /// Scan for problems.
     Check { files: Vec<String> },
-    /// Start LSP server.
-    Serve,
     /// Export graph.
     Graph {
         #[arg(long, default_value = "json")]
@@ -138,7 +136,6 @@ fn main() -> Result<()> {
         Command::Testgen { target, strategy } => commands::testgen::run(&target, &strategy),
         Command::Trace { attach } => commands::trace::run(attach),
         Command::Graph { output } => commands::graph::run(&output),
-        Command::Serve => commands::serve::run(),
         Command::Invariants => commands::invariants::run(),
     }
 }

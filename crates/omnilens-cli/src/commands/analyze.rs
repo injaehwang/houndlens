@@ -57,6 +57,9 @@ pub fn run() -> Result<()> {
     // Write AI context files.
     write_ai_context(&cwd)?;
 
+    // Install git pre-commit hook (harness — works with ALL AI tools).
+    install_harness_hook(&cwd)?;
+
     // Output for human + AI.
     println!();
     println!(
@@ -205,5 +208,112 @@ fn append_if_missing(path: &std::path::Path, line: &str) -> Result<()> {
     } else {
         std::fs::write(path, format!("{}\n", line))?;
     }
+    Ok(())
+}
+
+/// Install git pre-commit hook that runs omnilens verify.
+/// This is the HARNESS — it works with ALL AI tools (Claude, Cursor, Gemini, etc.)
+/// because every tool eventually commits through git.
+fn install_harness_hook(cwd: &std::path::Path) -> Result<()> {
+    // Find git hooks directory.
+    let output = std::process::Command::new("git")
+        .args(["rev-parse", "--git-dir"])
+        .current_dir(cwd)
+        .output();
+
+    let git_dir = match output {
+        Ok(o) if o.status.success() => {
+            String::from_utf8_lossy(&o.stdout).trim().to_string()
+        }
+        _ => return Ok(()), // Not a git repo, skip.
+    };
+
+    let hooks_dir = std::path::Path::new(&git_dir).join("hooks");
+    std::fs::create_dir_all(&hooks_dir)?;
+
+    let pre_commit = hooks_dir.join("pre-commit");
+
+    // Only install if no hook exists or it's our hook.
+    if pre_commit.exists() {
+        let content = std::fs::read_to_string(&pre_commit)?;
+        if !content.contains("omnilens") {
+            return Ok(()); // User has their own hook, don't overwrite.
+        }
+    }
+
+    std::fs::write(&pre_commit, r#"#!/bin/sh
+# omnilens harness — auto-verify before commit
+# This runs with ALL AI tools: Claude, Cursor, Gemini, Copilot, etc.
+
+if command -v omnilens > /dev/null 2>&1; then
+    echo "[omnilens] Verifying changes..."
+
+    # Rescan project.
+    omnilens > /dev/null 2>&1
+
+    # Verify changed files.
+    RESULT=$(omnilens verify --format json --diff HEAD 2>/dev/null)
+    BREAKING=$(echo "$RESULT" | grep -o '"breaking":[0-9]*' | grep -o '[0-9]*')
+
+    if [ "${BREAKING:-0}" -gt 0 ]; then
+        echo "[omnilens] BLOCKED: $BREAKING breaking changes detected."
+        echo "[omnilens] Run: omnilens verify --diff HEAD"
+        exit 1
+    fi
+
+    echo "[omnilens] OK"
+fi
+exit 0
+"#)?;
+
+    // Make executable on Unix.
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&pre_commit, std::fs::Permissions::from_mode(0o755))?;
+    }
+
+    // Also set up Claude Code hooks if .claude directory exists or can be created.
+    install_claude_hooks(cwd)?;
+
+    Ok(())
+}
+
+/// Install Claude Code specific hooks for real-time verification.
+fn install_claude_hooks(cwd: &std::path::Path) -> Result<()> {
+    let claude_dir = cwd.join(".claude");
+    std::fs::create_dir_all(&claude_dir)?;
+
+    let settings_path = claude_dir.join("settings.local.json");
+
+    let hooks_config = serde_json::json!({
+        "hooks": {
+            "afterEdit": [{
+                "command": "omnilens verify --format json --diff HEAD 2>/dev/null | head -1",
+                "description": "omnilens: verify changes after edit"
+            }],
+            "afterWrite": [{
+                "command": "omnilens verify --format json --diff HEAD 2>/dev/null | head -1",
+                "description": "omnilens: verify changes after write"
+            }]
+        }
+    });
+
+    // Read existing settings and merge.
+    let mut settings: serde_json::Value = if settings_path.exists() {
+        let content = std::fs::read_to_string(&settings_path)?;
+        serde_json::from_str(&content).unwrap_or(serde_json::json!({}))
+    } else {
+        serde_json::json!({})
+    };
+
+    // Only add hooks if not already present.
+    if settings.get("hooks").is_none() {
+        if let Some(obj) = settings.as_object_mut() {
+            obj.insert("hooks".to_string(), hooks_config["hooks"].clone());
+        }
+        std::fs::write(&settings_path, serde_json::to_string_pretty(&settings)?)?;
+    }
+
     Ok(())
 }
