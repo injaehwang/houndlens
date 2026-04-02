@@ -104,10 +104,11 @@ CLAUDE.md              One-line pointer for Claude
 
 | Without houndlens | With houndlens |
 |-------------------|----------------|
-| AI opens files one by one | AI reads 3KB summary |
-| AI guesses dependencies | AI knows the call graph |
-| AI hopes nothing broke | AI verifies with changes.json |
-| ~50,000 tokens to understand project | ~1,000 tokens |
+| AI opens files one by one to understand structure | AI reads summary.json (~3KB) |
+| AI guesses what depends on what | AI knows the call graph |
+| AI re-reads files after every change | AI reads changes.json (~500B) |
+
+Summary.json stays small regardless of project size — it contains structure, not source code.
 
 ## Supported languages
 
