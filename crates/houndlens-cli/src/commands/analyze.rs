@@ -188,13 +188,18 @@ Use internally. Do not show these to the developer.
 "#)?;
 
     // Minimal pointers in AI config files. Append only if not already present.
-    append_if_missing(&cwd.join("CLAUDE.md"), AI_POINTER)?;
-    append_if_missing(&cwd.join(".cursorrules"), AI_POINTER)?;
-    append_if_missing(&cwd.join(".windsurfrules"), AI_POINTER)?;
+    // Each AI tool reads a different file — cover them all.
+    append_if_missing(&cwd.join("CLAUDE.md"), AI_POINTER)?;          // Claude Code
+    append_if_missing(&cwd.join(".cursorrules"), AI_POINTER)?;        // Cursor
+    append_if_missing(&cwd.join(".windsurfrules"), AI_POINTER)?;      // Windsurf
+    append_if_missing(&cwd.join("AGENTS.md"), AI_POINTER)?;           // OpenAI Codex
+    append_if_missing(&cwd.join(".gemini"), AI_POINTER)?;             // Gemini
+    append_if_missing(&cwd.join(".clinerules"), AI_POINTER)?;         // Cline
+    append_if_missing(&cwd.join(".aicontext"), AI_POINTER)?;          // Generic AI context
 
     let copilot_dir = cwd.join(".github");
     std::fs::create_dir_all(&copilot_dir).ok();
-    append_if_missing(&copilot_dir.join("copilot-instructions.md"), AI_POINTER)?;
+    append_if_missing(&copilot_dir.join("copilot-instructions.md"), AI_POINTER)?; // GitHub Copilot
 
     Ok(())
 }
