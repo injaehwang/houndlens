@@ -1,4 +1,4 @@
-# houndlens
+# HoundLens
 
 **Give your AI the full picture.**
 
