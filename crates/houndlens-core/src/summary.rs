@@ -22,8 +22,17 @@ pub struct Summary {
     pub tooling: crate::snapshot::Tooling,
     pub hotspots: Vec<String>,
     pub top_dependencies: Vec<String>,
+    /// File-level overview: functions, types, imports per file.
+    pub file_map: BTreeMap<String, FileSummary>,
     pub ai_instructions: crate::snapshot::AiInstructions,
     pub capabilities: Vec<crate::snapshot::Capability>,
+}
+
+#[derive(Serialize)]
+pub struct FileSummary {
+    pub functions: Vec<String>,
+    pub types: Vec<String>,
+    pub imports: Vec<String>,
 }
 
 /// What changed between two snapshots.
@@ -66,6 +75,29 @@ pub fn generate_summary(snapshot: &Snapshot) -> Summary {
         .map(|d| format!("{} → {}", d.from_function, d.to_function))
         .collect();
 
+    // Build file map: compact function signatures, types, imports per file.
+    let mut file_map: BTreeMap<String, FileSummary> = BTreeMap::new();
+    for (path, info) in &snapshot.files {
+        let functions: Vec<String> = info.functions.iter().map(|f| {
+            let params = f.params.join(", ");
+            let ret = f.return_type.as_deref().unwrap_or("void");
+            let prefix = if f.is_async { "async " } else { "" };
+            format!("{}{}({}) → {}", prefix, f.name, params, ret)
+        }).collect();
+
+        let types: Vec<String> = info.types.iter().map(|t| {
+            if t.fields.is_empty() {
+                t.name.clone()
+            } else {
+                format!("{} {{ {} }}", t.name, t.fields.join(", "))
+            }
+        }).collect();
+
+        let imports = info.imports.clone();
+
+        file_map.insert(path.clone(), FileSummary { functions, types, imports });
+    }
+
     Summary {
         analysis_ms: snapshot.analysis_ms,
         files: snapshot.project.total_files,
@@ -81,6 +113,7 @@ pub fn generate_summary(snapshot: &Snapshot) -> Summary {
         },
         hotspots,
         top_dependencies: top_deps,
+        file_map,
         ai_instructions: crate::snapshot::AiInstructions {
             on_ready: snapshot.ai_instructions.on_ready.clone(),
             behavior: snapshot.ai_instructions.behavior.clone(),
